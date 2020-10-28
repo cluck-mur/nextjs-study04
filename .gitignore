@@ -32,3 +32,6 @@ yarn-error.log*
 
 # vercel
 .vercel
+/ドキュメント/~$(添付)Next.js ショッピングサイトデモ 作業ログ.xlsx
+/ドキュメント/~$Code向けデバッグ設定 手順.docx
+/ドキュメント/~WRL0005.tmp

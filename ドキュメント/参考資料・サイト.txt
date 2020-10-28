@@ -1,0 +1,56 @@
+
+
+
+--- 以下は nextjs-study03 から持ち越し -------------------
+◆ 参考1（書籍）
+　　気づけばプロ並みPHP 改訂版──ゼロから作れる人になる！
+　　発行: リックテレコム
+　　ISBN: 978-4-86594-065-7
+
+◆ 参考2（サイト）
+　　Next.js のチュートリアル
+　　本家url: https://nextjs.org/learn/basics/create-nextjs-app
+　　翻訳url: https://qiita.com/thesugar/items/01896c1faa8241e6b1bc
+
+◆ 参考3（サイト）
+    Next.js ドキュメント(日本語サイト)
+    url: https://nextjs-docs-ja.netlify.app/docs
+
+◆ 参考4（サイト）
+    初めてでもわかるNext.jsの基礎(React)
+    url: https://reffect.co.jp/react/next-js
+
+◆ 参考5（サイト）
+    Next.js 9.3新API getStaticProps と getStaticPaths と getServerSideProps の概要解説
+    url: https://qiita.com/matamatanot/items/1735984f40540b8bdf91
+
+◆ 参考6（サイト）
+　　nextjs with typescript:11 sqliteへの接続とAPIを使ったメソッド制御
+　　技術要素: sqlite3
+　　url: https://note.com/fz5050/n/nf50221626ee1
+
+◆ 参考7（サイト）
+　　仕事ですぐに使えるTypeScript
+　　技術要素: TypeScript
+　　url: https://future-architect.github.io/typescript-guide/index.html
+
+◆ 参考8（サイト）
+　　Next.js with typescript（fz5050さんのサイト）
+　　技術要素: Formik, Material-UI
+　　url: https://note.com/fz5050/m/mf478cd983212/archive/2020-08
+
+◆ 参考9（サイト）
+　　Next.js × Express で日記アプリ制作（ひとしさんのサイト）
+　　技術要素: express, mongoDB, bootstrap, POST, GET, form
+　　part1: https://note.com/hitoshi_555/n/nf7d11bf13021
+　　part2: https://note.com/hitoshi_555/n/n7902c7542a96
+　　part3: https://note.com/hitoshi_555/n/nf71347a3ef85
+　　part4: https://note.com/hitoshi_555/n/n989756426236
+
+◆ 参考10（サイト）
+　　【console.logとはおさらば】Next.jsをVSCodeでデバッグさせる方法
+　　url: https://ichiki.netlify.app/blog/20200113_nextjs_debug/
+
+◆ 参考11（サイト）
+　　getServerSideProps の中でPOSTのデータにアクセスする（Accessing POST data in getServerSideProps #12152）
+　　url: https://github.com/vercel/next.js/discussions/12152

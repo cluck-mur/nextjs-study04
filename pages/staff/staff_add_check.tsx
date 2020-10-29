@@ -8,13 +8,13 @@ import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import getRawBody from "raw-body";
 import formUrlDecoded from "form-urldecoded";
-import htmlspecialchars from "htmlspecialchars"
+import htmlspecialchars from "htmlspecialchars";
 import md5 from "md5";
 
 type StaffAddParam = {
-  name: string;
-  pass: string;
-  pass2: string;
+  name: string | undefined;
+  pass: string | undefined;
+  pass2: string | undefined;
 };
 
 /**
@@ -22,25 +22,27 @@ type StaffAddParam = {
  * @param param0
  */
 const StaffAddCheck = (StaffAddParam) => {
-  // 前画面からデータを受け取る
+  //#region 前画面からデータを受け取る
   const staff_name = htmlspecialchars(StaffAddParam.name);
   let staff_pass = htmlspecialchars(StaffAddParam.pass);
   const staff_pass2 = htmlspecialchars(StaffAddParam.pass2);
   const router = useRouter();
+  //#endregion 前画面からデータを受け取る
 
-  let name_str: string = '';
+  //#region 画面用データを設定
+  let name_str: string = "";
   let pass_display_flg: boolean = false;
   let pass2_display_flg: boolean = false;
 
-  if (staff_name == '') {
+  if (staff_name == "") {
     // もしスタッフ名が入力されていなかったら "スタッフ名が入力されていません" と表示する
-    name_str = 'スタッフ名が入力されていません';
+    name_str = "スタッフ名が入力されていません";
   } else {
     // もしスタッフ名が入力されていたらスタッフ名を表示する
     name_str = `スタッフ名：${staff_name}`;
   }
 
-  if (staff_pass == '') {
+  if (staff_pass == "") {
     // もしパスワードが入力されていなかったら "パスワードが入力されていません" と表示する
     pass_display_flg = true;
   }
@@ -49,41 +51,44 @@ const StaffAddCheck = (StaffAddParam) => {
     // もし１回目のパスワードと2回目のパスワードが一致しなかったら "パスワードが一致しません" と表示する
     pass2_display_flg = true;
   }
+  //#endregion 画面用データを設定
 
-  if (staff_name == '' || staff_pass == '' || staff_pass != staff_pass2) {
-    return (
-      <div>
-        <Head>
-          <meta charSet="UTF-8" />
-          <title>ろくまる農園 スタッフ追加チェック</title>
-        </Head>
-        {/* もし入力に問題があったら "戻る"ボタンだけを表示する */}
-        <main>
-          {/* スタッフ名表示 */}
-          <div style={{ display: null }}>{name_str}<br /></div>
-          {/* パスワード未入力警告文表示 */}
-          <div style={{ display: pass_display_flg ? null : 'none' }}>パスワードが入力されていません<br /></div>
-          {/* パスワード不一致警告文表示 */}
-          <div style={{ display: pass2_display_flg ? null : 'none' }}>パスワードが一致しません<br /></div>
-          <form>
-            <input type="button" onClick={() => router.back()} value="戻る" />;
-        </form>
-        </main>
-      </div>
-    );
-
+  //#region 次画面へ移行できるか判断する
+  let can_move_next_page = true;
+  if (staff_name == "" || staff_pass == "" || staff_pass != staff_pass2) {
+    can_move_next_page = false;
   } else {
+    // パスワードをハッシュ化する
     staff_pass = md5(staff_pass);
+  }
+  //#endregion 次画面へ移行できるか判断する
 
-    return (
-      <div>
-        <Head>
-          <meta charSet="UTF-8" />
-          <title>ろくまる農園 スタッフ追加チェック</title>
-        </Head>
-        {/* もし入力に問題があったら "戻る"ボタンだけを表示する */}
-        <main>
-          <div style={{ display: 'block' }}>{name_str}<br /></div>
+  //#region JSX
+  return (
+    <div>
+      <Head>
+        <meta charSet="UTF-8" />
+        <title>ろくまる農園 スタッフ追加チェック</title>
+      </Head>
+      {/* もし入力に問題があったら "戻る"ボタンだけを表示する */}
+      <main>
+        {/* スタッフ名表示 */}
+        <div>{name_str}</div>
+        {/* パスワード未入力警告文表示 */}
+        {pass_display_flg && (
+          <div>
+            パスワードが入力されていません
+            <br />
+          </div>
+        )}
+        {/* パスワード不一致警告文表示 */}
+        {pass2_display_flg && (
+          <div>
+            パスワードが一致しません
+            <br />
+          </div>
+        )}
+        {can_move_next_page ? (
           <form method="post" action="staff_add_done">
             <input type="hidden" name="name" value={staff_name} />
             <input type="hidden" name="pass" value={staff_pass} />
@@ -91,11 +96,15 @@ const StaffAddCheck = (StaffAddParam) => {
             <input type="button" onClick={() => router.back()} value="戻る" />
             <input type="submit" value="OK" />
           </form>
-        </main>
-      </div>
-    );
-  }
-
+        ) : (
+          <form>
+            <input type="button" onClick={() => router.back()} value="戻る" />
+          </form>
+        )}
+      </main>
+    </div>
+  );
+  //#endregion JSX
 };
 
 /**
@@ -105,20 +114,29 @@ const StaffAddCheck = (StaffAddParam) => {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   let staff_add_param: StaffAddParam;
 
-  //#region // POSTメッセージからBodyを取得する
+  //#region POSTメッセージからパラメータを取得する
   if (context.req.method == "POST") {
     const body = await getRawBody(context.req);
     const body_string = body.toString();
     const body_json = formUrlDecoded(body_string);
     //console.log(body_json)
+    const name = typeof body_json.name == "undefined" ? '' : body_json.name;
+    const pass = typeof body_json.pass == "undefined" ? '' : body_json.pass;
+    const pass2 = typeof body_json.pass2 == "undefined" ? '' : body_json.pass2;
     staff_add_param = {
-      name: typeof body_json.name == undefined ? '' : body_json.name,
-      pass: typeof body_json.pass == undefined ? '' : body_json.pass,
-      pass2: typeof body_json.pass2 == undefined ? '' : body_json.pass2
+      name: name,
+      pass: pass,
+      pass2: pass2,
     };
-    console.log(staff_add_param);
+    //console.log(staff_add_param);
+  } else {
+    staff_add_param = {
+      name: '',
+      pass: '',
+      pass2: ''
+    }
   }
-  //#endregion　// POSTメッセージからBodyを取得する
+  //#endregion POSTメッセージからパラメータを取得する
 
   return {
     props: staff_add_param,

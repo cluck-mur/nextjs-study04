@@ -9,6 +9,7 @@ import { GetServerSideProps } from "next";
 import getRawBody from "raw-body";
 import formUrlDecoded from "form-urldecoded";
 import htmlspecialchars from "htmlspecialchars"
+import md5 from "md5";
 
 type StaffAddParam = {
   name: string;
@@ -23,67 +24,78 @@ type StaffAddParam = {
 const StaffAddCheck = (StaffAddParam) => {
   // 前画面からデータを受け取る
   const staff_name = htmlspecialchars(StaffAddParam.name);
-  const staff_pass = htmlspecialchars(StaffAddParam.pass);
+  let staff_pass = htmlspecialchars(StaffAddParam.pass);
   const staff_pass2 = htmlspecialchars(StaffAddParam.pass2);
   const router = useRouter();
-  
-if (staff_name == '' || staff_pass == '' || staff_pass != staff_pass2) {
+
+  let name_str: string = '';
+  let pass_display_flg: boolean = false;
+  let pass2_display_flg: boolean = false;
+
   if (staff_name == '') {
     // もしスタッフ名が入力されていなかったら "スタッフ名が入力されていません" と表示する
-    print "スタッフ名が入力されていません<br />";
-} else {
+    name_str = 'スタッフ名が入力されていません';
+  } else {
     // もしスタッフ名が入力されていたらスタッフ名を表示する
-    print "スタッフ名：$staff_name<br />";
-}
+    name_str = `スタッフ名：${staff_name}`;
+  }
 
-if ($staff_pass == '') {
+  if (staff_pass == '') {
     // もしパスワードが入力されていなかったら "パスワードが入力されていません" と表示する
-    print "パスワードが入力されていません<br />";
-}
+    pass_display_flg = true;
+  }
 
-if ($staff_pass != $staff_pass2) {
+  if (staff_pass != staff_pass2) {
     // もし１回目のパスワードと2回目のパスワードが一致しなかったら "パスワードが一致しません" と表示する
-    print "パスワードが一致しません<br />";
-}
+    pass2_display_flg = true;
+  }
 
-    // もし入力に問題があったら "戻る"ボタンだけを表示する
-  
-    print '<input type="button" onclick="history.back()" value="戻る">';
-  print '</form>';
-
-  return (
-    <div>
-      <Head>
-        <meta charSet="UTF-8" />
-        <title>ろくまる農園 スタッフ追加チェック</title>
-      </Head>
-      <main>
-        <form>
-          <input type="button" onClick={() => router.back()} value="戻る" />;
+  if (staff_name == '' || staff_pass == '' || staff_pass != staff_pass2) {
+    return (
+      <div>
+        <Head>
+          <meta charSet="UTF-8" />
+          <title>ろくまる農園 スタッフ追加チェック</title>
+        </Head>
+        {/* もし入力に問題があったら "戻る"ボタンだけを表示する */}
+        <main>
+          {/* スタッフ名表示 */}
+          <div style={{ display: null }}>{name_str}<br /></div>
+          {/* パスワード未入力警告文表示 */}
+          <div style={{ display: pass_display_flg ? null : 'none' }}>パスワードが入力されていません<br /></div>
+          {/* パスワード不一致警告文表示 */}
+          <div style={{ display: pass2_display_flg ? null : 'none' }}>パスワードが一致しません<br /></div>
+          <form>
+            <input type="button" onClick={() => router.back()} value="戻る" />;
         </form>
-      </main>
-    </div>
-  );
-  
-} else {
-    $staff_pass = md5($staff_pass);
-    print '<form method="post" action="staff_add_done.php">';
-    print '<input type="hidden" name="name" value='.$staff_name.'>';
-    print '<input type="hidden" name="pass" value='.$staff_pass.'>';
-    print '<br />';
-    print '<input type="button" onclick="history.back()" value="戻る">';
-    print '<input type="submit" value="OK">';
-    print '</form>';
-}
+        </main>
+      </div>
+    );
 
-  return (
-    <div>
-      <Head>
-        <meta charSet="UTF-8" />
-        <title>ろくまる農園 スタッフ追加チェック</title>
-      </Head>
-    </div>
-  );
+  } else {
+    staff_pass = md5(staff_pass);
+
+    return (
+      <div>
+        <Head>
+          <meta charSet="UTF-8" />
+          <title>ろくまる農園 スタッフ追加チェック</title>
+        </Head>
+        {/* もし入力に問題があったら "戻る"ボタンだけを表示する */}
+        <main>
+          <div style={{ display: 'block' }}>{name_str}<br /></div>
+          <form method="post" action="staff_add_done">
+            <input type="hidden" name="name" value={staff_name} />
+            <input type="hidden" name="pass" value={staff_pass} />
+            <br />
+            <input type="button" onClick={() => router.back()} value="戻る" />
+            <input type="submit" value="OK" />
+          </form>
+        </main>
+      </div>
+    );
+  }
+
 };
 
 /**
@@ -100,10 +112,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const body_json = formUrlDecoded(body_string);
     //console.log(body_json)
     staff_add_param = {
-      name: body_json.name,
-      pass: body_json.pass,
-      pass2: body_json.pass2,
+      name: typeof body_json.name == undefined ? '' : body_json.name,
+      pass: typeof body_json.pass == undefined ? '' : body_json.pass,
+      pass2: typeof body_json.pass2 == undefined ? '' : body_json.pass2
     };
+    console.log(staff_add_param);
   }
   //#endregion　// POSTメッセージからBodyを取得する
 

@@ -54,3 +54,9 @@
 ◆ 参考11（サイト）
 　　getServerSideProps の中でPOSTのデータにアクセスする（Accessing POST data in getServerSideProps #12152）
 　　url: https://github.com/vercel/next.js/discussions/12152
+
+◆ メモ
+　　PHPの htmlspecialchars() 相当のnpmモジュール
+　　
+　　$> npm install htmlspecialchars
+

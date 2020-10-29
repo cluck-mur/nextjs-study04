@@ -11,7 +11,8 @@ import formUrlDecoded from "form-urldecoded";
 import htmlspecialchars from "htmlspecialchars";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
-import path from 'path'
+import path from "path";
+import { dbFilePath, dbFileName } from "../../lib/global_const";
 
 type StaffAddDoneParam = {
   is_post: boolean;
@@ -19,7 +20,7 @@ type StaffAddDoneParam = {
   staff_name: string;
 };
 
-const dbWorkDirectory = path.join(process.cwd(), '.db_work')
+const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
 
 /**
  * スタッフ追加 完了
@@ -79,8 +80,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     //#region DBへstaffを追加
     // DBファイルのパスを取得
-    const filename: string = 'MyDb.sqlite'
-    const fullPath: string = path.join(dbWorkDirectory, filename)
+    const filename: string = dbFileName;
+    const fullPath: string = path.join(dbWorkDirectory, filename);
 
     let exception_occured_flg = false;
     try {

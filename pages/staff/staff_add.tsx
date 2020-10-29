@@ -5,6 +5,7 @@
  ***************************************************/
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
+import Head from "next/head";
 
 /**
  * スタッフ追加
@@ -15,6 +16,10 @@ const StaffAdd = ({}) => {
 
   return (
     <div>
+      <Head>
+        <meta charSet="UTF-8" />
+        <title>ろくまる農園 スタッフ追加</title>
+      </Head>
       スタッフ追加
       <br />
       <br />

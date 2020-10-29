@@ -60,3 +60,12 @@
 　　
 　　$> npm install htmlspecialchars
 
+◆ 参考12（サイト）
+　　JSXの中で条件分岐
+　　TITLE: 【React知見】条件分岐（IF文）とそのネスト
+　　URL: https://qiita.com/SLEAZOIDS/items/4f3c1b77d291eef548af
+
+◆ 参考13（サイト）
+　　Database Prisma（SQLite3の代わりになる？）
+　　TITLE: The Easiest Way to Work with a Database in Next.js
+　　URL: https://www.prisma.io/nextjs

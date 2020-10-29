@@ -11,7 +11,7 @@ import formUrlDecoded from "form-urldecoded";
 import htmlspecialchars from "htmlspecialchars";
 import md5 from "md5";
 
-type StaffAddParam = {
+type StaffAddCheckParam = {
   name: string | undefined;
   pass: string | undefined;
   pass2: string | undefined;
@@ -21,11 +21,11 @@ type StaffAddParam = {
  * スタッフ追加 入力値チェック
  * @param param0
  */
-const StaffAddCheck = (StaffAddParam) => {
+const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
   //#region 前画面からデータを受け取る
-  const staff_name = htmlspecialchars(StaffAddParam.name);
-  let staff_pass = htmlspecialchars(StaffAddParam.pass);
-  const staff_pass2 = htmlspecialchars(StaffAddParam.pass2);
+  const staff_name = htmlspecialchars(staffAddCheckParam.name);
+  let staff_pass = htmlspecialchars(staffAddCheckParam.pass);
+  const staff_pass2 = htmlspecialchars(staffAddCheckParam.pass2);
   const router = useRouter();
   //#endregion 前画面からデータを受け取る
 
@@ -112,7 +112,7 @@ const StaffAddCheck = (StaffAddParam) => {
  * @param context
  */
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  let staff_add_param: StaffAddParam;
+  let staffAddCheckParam: StaffAddCheckParam;
 
   //#region POSTメッセージからパラメータを取得する
   if (context.req.method == "POST") {
@@ -120,26 +120,26 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const body_string = body.toString();
     const body_json = formUrlDecoded(body_string);
     //console.log(body_json)
-    const name = typeof body_json.name == "undefined" ? '' : body_json.name;
-    const pass = typeof body_json.pass == "undefined" ? '' : body_json.pass;
-    const pass2 = typeof body_json.pass2 == "undefined" ? '' : body_json.pass2;
-    staff_add_param = {
+    const name = typeof body_json.name == "undefined" ? "" : body_json.name;
+    const pass = typeof body_json.pass == "undefined" ? "" : body_json.pass;
+    const pass2 = typeof body_json.pass2 == "undefined" ? "" : body_json.pass2;
+    staffAddCheckParam = {
       name: name,
       pass: pass,
       pass2: pass2,
     };
     //console.log(staff_add_param);
   } else {
-    staff_add_param = {
-      name: '',
-      pass: '',
-      pass2: ''
-    }
+    staffAddCheckParam = {
+      name: "",
+      pass: "",
+      pass2: "",
+    };
   }
   //#endregion POSTメッセージからパラメータを取得する
 
   return {
-    props: staff_add_param,
+    props: staffAddCheckParam,
   };
 };
 

@@ -114,8 +114,8 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   let staffAddCheckParam: StaffAddCheckParam;
 
-  //#region POSTメッセージからパラメータを取得する
   if (context.req.method == "POST") {
+    //#region POSTメッセージからパラメータを取得する
     const body = await getRawBody(context.req);
     const body_string = body.toString();
     const body_json = formUrlDecoded(body_string);
@@ -129,6 +129,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       pass2: pass2,
     };
     //console.log(staff_add_param);
+    //#endregion POSTメッセージからパラメータを取得する
   } else {
     staffAddCheckParam = {
       name: "",
@@ -136,7 +137,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       pass2: "",
     };
   }
-  //#endregion POSTメッセージからパラメータを取得する
 
   return {
     props: staffAddCheckParam,

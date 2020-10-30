@@ -57,7 +57,10 @@ const StaffList = (staffListParam: StaffListParam) => {
         <br />
         <br />
         {/* 分岐画面へ移行する */}
+        {/*
         <form method="post" action="staff_branch">
+        */}
+        <form method="post" action="staff_edit">
           {GenSelectStaffFormChildren(staffListParam)}
           <input type="submit" name="disp" value="参照" />
           <input type="submit" name="add" value="追加" />

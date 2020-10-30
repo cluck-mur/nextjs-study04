@@ -21,6 +21,27 @@ type StaffListParam = {
 const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
 
 /**
+ * スタッフ選択フォームを生成
+ * @param staffListParam
+ */
+const GenSelectStaffFormChildren = (staffListParam: StaffListParam) => {
+  const items = [];
+  staffListParam.staffs.map((staff) => {
+    items.push(
+      <div key={staff.code}>
+        <input
+          type="radio"
+          name="staffcode"
+          value={staff.code}
+        />
+          {staff.name}
+      </div>
+    );
+  });
+  return <div>{items}</div>;
+};
+
+/**
  * スタッフリスト
  * @param staffListParam
  */
@@ -36,55 +57,13 @@ const StaffList = (staffListParam: StaffListParam) => {
         <br />
         <br />
         {/* 分岐画面へ移行する */}
-        {(() => {
-          const items = [];
-          items.push(
-            <div>
-              <form method="post" action="staff_branch.php">
-                {(() => {
-                  const input_items = [];
-                  staffListParam.staffs.map((staff) => {
-                    input_items.push(
-                      <div>
-                        <input
-                          type="radio"
-                          name="staffcode"
-                          value={staff.code.toString()}
-                        >
-                          {staff.name}
-                        </input>
-                        <br />
-                      </div>
-                    );
-                  });
-                  return (
-                    <div>
-                        {input_items}
-                    </div>
-                  );
-                })()}
-              </form>
-            </div>
-          );
-          /*
-          staffListParam.staffs.map((staff) => {
-            items.push(
-              <div>
-                {staff.name}
-                <br />
-              </div>
-            );
-          });
-          */
-          return <div>{items}</div>;
-        })()}
-        {/*
-        <form method="post" action="staff_branch.php">
-          {staffListParam.staffs.map((staff) => {
-            {staff.name}
-          })}
+        <form method="post" action="staff_branch">
+          {GenSelectStaffFormChildren(staffListParam)}
+          <input type="submit" name="disp" value="参照" />
+          <input type="submit" name="add" value="追加" />
+          <input type="submit" name="edit" value="修正" />
+          <input type="submit" name="delete" value="削除" />
         </form>
-        */}
       </div>
     );
   } else {

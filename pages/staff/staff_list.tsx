@@ -12,7 +12,10 @@ import { dbFilePath, dbFileName } from "../../lib/global_const";
 
 type StaffListParam = {
   exception_occured_flg: boolean;
-  staffs: { name: string }[];
+  staffs: {
+    name: string;
+    code: number;
+  }[];
 };
 
 const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
@@ -35,6 +38,35 @@ const StaffList = (staffListParam: StaffListParam) => {
         {/* 分岐画面へ移行する */}
         {(() => {
           const items = [];
+          items.push(
+            <div>
+              <form method="post" action="staff_branch.php">
+                {(() => {
+                  const input_items = [];
+                  staffListParam.staffs.map((staff) => {
+                    input_items.push(
+                      <div>
+                        <input
+                          type="radio"
+                          name="staffcode"
+                          value={staff.code.toString()}
+                        >
+                          {staff.name}
+                        </input>
+                        <br />
+                      </div>
+                    );
+                  });
+                  return (
+                    <div>
+                        {input_items}
+                    </div>
+                  );
+                })()}
+              </form>
+            </div>
+          );
+          /*
           staffListParam.staffs.map((staff) => {
             items.push(
               <div>
@@ -43,6 +75,7 @@ const StaffList = (staffListParam: StaffListParam) => {
               </div>
             );
           });
+          */
           return <div>{items}</div>;
         })()}
         {/*
@@ -86,9 +119,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     });
     //db.serialize();
 
-    const staffs = await db.all("SELECT name FROM mst_staff WHERE 1");
-    staffs.map((name) => {
-      staffListParam.staffs.push(name);
+    const staffs = await db.all("SELECT code,name FROM mst_staff WHERE 1");
+    staffs.map((staff) => {
+      staffListParam.staffs.push(staff);
     });
     //console.log(staffListParam);
   } catch (e) {

@@ -3,6 +3,7 @@
  * スタッフ追加 完了 画面
  *
  ***************************************************/
+import React from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
@@ -13,10 +14,12 @@ import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import path from "path";
 import { dbFilePath, dbFileName } from "../../lib/global_const";
+import { GenJsxMessage } from "../../lib/myUtils";
 
 type StaffAddDoneParam = {
   is_post: boolean;
-  exception_occured_flg: boolean;
+  is_exception: boolean;
+  display_message: string[];
   staff_name: string;
 };
 
@@ -29,30 +32,18 @@ const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
 const StaffSddDone = (staffAddDoneParam: StaffAddDoneParam) => {
   const router = useRouter();
 
-  if (staffAddDoneParam.is_post) {
-    if (!staffAddDoneParam.exception_occured_flg) {
+  if (staffAddDoneParam.is_post && !staffAddDoneParam.is_exception) {
       return (
         <div>
           {staffAddDoneParam.staff_name} さんを追加しました。
           <br />
         </div>
       );
-    } else {
-      return (
-        <div>
-          ただいま障害により大変ご迷惑をお掛けしております。
-          <br />
-        </div>
-      );
-    }
   } else {
     return (
-      <div>
-        原因不明のエラーが発生しました。
-        <br />
-        申し訳ありませんがもう一度最初からやり直してください。
-        <br />
-      </div>
+      <React.Fragment>
+        {GenJsxMessage(staffAddDoneParam.display_message)}
+      </React.Fragment>
     );
   }
 };
@@ -62,7 +53,12 @@ const StaffSddDone = (staffAddDoneParam: StaffAddDoneParam) => {
  * @param context
  */
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  let staffAddDoneParam: StaffAddDoneParam;
+  let staffAddDoneParam: StaffAddDoneParam = {
+    is_post: true,
+    is_exception: false,
+    display_message: [],
+    staff_name: "string",
+  };
 
   //#region POSTメッセージからパラメータを取得する
   if (context.req.method == "POST") {
@@ -83,7 +79,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const filename: string = dbFileName;
     const fullPath: string = path.join(dbWorkDirectory, filename);
 
-    let exception_occured_flg = false;
+    let is_exception = false;
     try {
       // DBオープン
       const db = await open({
@@ -98,29 +94,34 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         // await stmt.run("InsertStaff");
         await stmt.run();
       } catch (e) {
-        exception_occured_flg = true;
+        is_exception = true;
       } finally {
         await stmt.finalize();
       }
     } catch (e) {
-      exception_occured_flg = true;
+      is_exception = true;
     } finally {
       // 処理なし
     }
     //#endregion DBへstaffを追加
 
-    staffAddDoneParam = {
-      is_post: true,
-      exception_occured_flg: exception_occured_flg,
-      staff_name: staff_name,
-    };
+    staffAddDoneParam.is_post = true;
+    staffAddDoneParam.is_exception = is_exception;
+    staffAddDoneParam.staff_name = staff_name;
+    if (is_exception) {
+      staffAddDoneParam.display_message.push(
+        "ただいま障害により大変ご迷惑をお掛けしております。"
+      );
+    }
     //console.log(staff_add_param);
   } else {
-    staffAddDoneParam = {
-      is_post: false,
-      exception_occured_flg: false,
-      staff_name: "",
-    };
+    staffAddDoneParam.is_post = false;
+    staffAddDoneParam.is_exception = false;
+    staffAddDoneParam.staff_name = "";
+    staffAddDoneParam.display_message.push("原因不明のエラーが発生しました。");
+    staffAddDoneParam.display_message.push(
+      "申し訳ありませんがもう一度やり直してください。"
+    );
   }
   //#endregion POSTメッセージからパラメータを取得する
 

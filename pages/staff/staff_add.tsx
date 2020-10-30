@@ -3,6 +3,7 @@
  * スタッフ追加画面
  *
  ***************************************************/
+import React from "react";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
@@ -15,7 +16,7 @@ const StaffAdd = ({}) => {
   const router = useRouter();
 
   return (
-    <div>
+    <React.Fragment>
       <Head>
         <meta charSet="UTF-8" />
         <title>ろくまる農園 スタッフ追加</title>
@@ -40,7 +41,7 @@ const StaffAdd = ({}) => {
         <input type="button" onClick={() => router.back()} value="戻る" />
         <input type="submit" value="OK" />
       </form>
-    </div>
+    </React.Fragment>
   );
 };
 

@@ -1,22 +1,22 @@
 /***************************************************
  *
- * スタッフ情報修正画面 SSR版
+ * スタッフ情報修正画面 NOT-SSR版
  *
  ***************************************************/
 import React from "react";
-import { useState } from "react";
+//import { useState } from "react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import path from "path";
-import { dbFilePath, dbFileName } from "../../lib/global_const";
+import { dbFilePath, dbFileName } from "../../../lib/global_const";
 import getRawBody from "raw-body";
 import formUrlDecoded from "form-urldecoded";
 import htmlspecialchars from "htmlspecialchars";
 import md5 from "md5";
-import { GenJsxMessage } from "../../lib/myUtils";
+import { GenJsxMessage } from "../../../lib/myUtils";
 
 type StaffEditParam = {
   is_post: boolean;
@@ -26,24 +26,23 @@ type StaffEditParam = {
   staff_name: string;
 };
 
-const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
-
 /**
  * スタッフ情報修正
  * @param staffEditParam
  */
-const StaffEdit = (staffEditParam: StaffEditParam) => {
-  const [value, setValue] = useState("");
+function StaffEdit(staffEditParam: StaffEditParam) {
+  //const [value, setValue] = useState("");
 
   //#region 前画面からデータを受け取る
-  const staff_name = htmlspecialchars(staffEditParam.staff_name);
+  //const staff_name = htmlspecialchars(staffEditParam.staff_name);
+  const staff_name = staffEditParam.staff_name;
   const router = useRouter();
   //#endregion 前画面からデータを受け取る
 
   if (staffEditParam.is_post && !staffEditParam.is_exception) {
-    const onChangeEvent = (event) => {
-      setValue(event.target.value);
-    };
+    // const onChangeEvent = (event) => {
+    //   setValue(event.target.value);
+    // };
 
     return (
       <React.Fragment>
@@ -62,7 +61,7 @@ const StaffEdit = (staffEditParam: StaffEditParam) => {
           <input type="hidden" name="code" value={staffEditParam.staff_code} />
           スタッフ名
           <br />
-          <input
+          <input key="staff_name"
             type="text"
             name="name"
             width="200px"
@@ -72,11 +71,11 @@ const StaffEdit = (staffEditParam: StaffEditParam) => {
           <br />
           パスワードを入力してください。
           <br />
-          <input type="password" name="pass" width="100px" />
+          <input key="pass" type="password" name="pass" width="100px" />
           <br />
           パスワードをもう一度入力してください。
           <br />
-          <input type="password" name="pass2" width="100px" />
+          <input key="pass2" type="password" name="pass2" width="100px" />
           <br />
           <br />
           <input type="button" onClick={() => router.back()} value="戻る" />
@@ -90,10 +89,10 @@ const StaffEdit = (staffEditParam: StaffEditParam) => {
 };
 
 /**
- * SSR
+ * getInitialProps
  * @param context
  */
-export const getServerSideProps: GetServerSideProps = async (context) => {
+StaffEdit.getInitialProps = async (context) => {
   let staffEditParam: StaffEditParam = {
     is_post: true,
     is_exception: false,
@@ -101,6 +100,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     staff_code: null,
     staff_name: "",
   };
+
+  const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
 
   if (context.req.method == "POST") {
     //#region POSTメッセージからパラメータを取得する
@@ -135,7 +136,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         const staff_name = staff[0].name;
 
         staffEditParam.staff_code = staffcode;
-        staffEditParam.staff_name = staff_name;
+        staffEditParam.staff_name = htmlspecialchars(staff_name);
       } else if (staff.length < 1) {
         is_exception = true;
         display_message.push("指定されたスタッフは見つかりませんでした。");
@@ -163,9 +164,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     );
   }
 
-  return {
-    props: staffEditParam,
-  };
+  return staffEditParam;
 };
 
 export default StaffEdit;

@@ -3,15 +3,18 @@
  * スタッフリスト画面
  *
  ***************************************************/
+import React from "react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import path from "path";
 import { dbFilePath, dbFileName } from "../../lib/global_const";
+import { GenJsxMessage } from "../../lib/myUtils";
 
 type StaffListParam = {
-  exception_occured_flg: boolean;
+  is_exception: boolean;
+  display_message: string[];
   staffs: {
     name: string;
     code: number;
@@ -28,17 +31,14 @@ const GenSelectStaffFormChildren = (staffListParam: StaffListParam) => {
   const items = [];
   staffListParam.staffs.map((staff) => {
     items.push(
-      <div key={staff.code}>
-        <input
-          type="radio"
-          name="staffcode"
-          value={staff.code}
-        />
-          {staff.name}
-      </div>
+      <React.Fragment key={staff.code}>
+        <input type="radio" name="staffcode" value={staff.code} />
+        {staff.name}
+        <br />
+      </React.Fragment>
     );
   });
-  return <div>{items}</div>;
+  return <React.Fragment>{items}</React.Fragment>;
 };
 
 /**
@@ -46,9 +46,9 @@ const GenSelectStaffFormChildren = (staffListParam: StaffListParam) => {
  * @param staffListParam
  */
 const StaffList = (staffListParam: StaffListParam) => {
-  if (!staffListParam.exception_occured_flg) {
+  if (!staffListParam.is_exception) {
     return (
-      <div>
+      <React.Fragment>
         <Head>
           <meta charSet="UTF-8" />
           <title>ろくまる農園 スタッフ一覧</title>
@@ -67,15 +67,10 @@ const StaffList = (staffListParam: StaffListParam) => {
           <input type="submit" name="edit" value="修正" />
           <input type="submit" name="delete" value="削除" />
         </form>
-      </div>
+      </React.Fragment>
     );
   } else {
-    return (
-      <div>
-        ただいま障害により大変ご迷惑をお掛けしております。
-        <br />
-      </div>
-    );
+    return GenJsxMessage(staffListParam.display_message);
   }
 };
 
@@ -88,9 +83,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   // DBファイルのパスを取得
   const filename: string = dbFileName;
   const fullPath: string = path.join(dbWorkDirectory, filename);
-  let exception_occured_flg = false;
+
+  let is_exception = false;
+  const display_message: string[] = [];
   let staffListParam: StaffListParam = {
-    exception_occured_flg: exception_occured_flg,
+    is_exception: is_exception,
+    display_message: [],
     staffs: Array(),
   };
   try {
@@ -107,9 +105,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     });
     //console.log(staffListParam);
   } catch (e) {
-    exception_occured_flg = true;
+    is_exception = true;
+    display_message.push("ただいま障害により大変ご迷惑をお掛けしております。");
   } finally {
-    staffListParam.exception_occured_flg = exception_occured_flg;
+    staffListParam.is_exception = is_exception;
+    staffListParam.display_message = display_message;
   }
   //#endregion DBへstaffを追加
 

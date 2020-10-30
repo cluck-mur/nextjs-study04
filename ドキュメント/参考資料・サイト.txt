@@ -69,3 +69,22 @@
 　　Database Prisma（SQLite3の代わりになる？）
 　　TITLE: The Easiest Way to Work with a Database in Next.js
 　　URL: https://www.prisma.io/nextjs
+
+◆ 参考14（サイト）
+　　TypeScriptにおけるJSXについての解説
+　　TITLE: TypeScriptの型におけるJSXサポートが100%分かる記事
+　　URL: https://qiita.com/uhyo/items/adf6cb83333a25097f25
+
+◆ 参考15（サイト）
+　　JavaScriptにおけるるーぷについて
+　　TITLE: JavaScript で forEach を使うのは最終手段
+　　URL: https://qiita.com/diescake/items/70d9b0cbd4e3d5cc6fce
+
+◆ 参考16（サイト）
+　　TITLE: Next.js公式examples集を分類
+　　URL: https://qiita.com/masakinihirota/items/39888f37000f0d17111b
+
+
+◆ 参考17（サイト）
+　　TITLE: セキュア･プログラミング講座 by IPA
+　　URL: https://www.ipa.go.jp/security/awareness/vendor/programming/index.html

@@ -3,6 +3,7 @@
  * スタッフ追加 入力値チェック 画面
  *
  ***************************************************/
+import React from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
@@ -65,44 +66,42 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
 
   //#region JSX
   return (
-    <div>
+    <React.Fragment>
       <Head>
         <meta charSet="UTF-8" />
         <title>ろくまる農園 スタッフ追加チェック</title>
       </Head>
       {/* もし入力に問題があったら "戻る"ボタンだけを表示する */}
-      <main>
-        {/* スタッフ名表示 */}
-        <div>{name_str}</div>
-        {/* パスワード未入力警告文表示 */}
-        {pass_display_flg && (
-          <div>
-            パスワードが入力されていません
-            <br />
-          </div>
-        )}
-        {/* パスワード不一致警告文表示 */}
-        {pass2_display_flg && (
-          <div>
-            パスワードが一致しません
-            <br />
-          </div>
-        )}
-        {can_move_next_page ? (
-          <form method="post" action="staff_add_done">
-            <input type="hidden" name="name" value={staff_name} />
-            <input type="hidden" name="pass" value={staff_pass} />
-            <br />
-            <input type="button" onClick={() => router.back()} value="戻る" />
-            <input type="submit" value="OK" />
-          </form>
-        ) : (
-          <form>
-            <input type="button" onClick={() => router.back()} value="戻る" />
-          </form>
-        )}
-      </main>
-    </div>
+      {/* スタッフ名表示 */}
+      <div>{name_str}</div>
+      {/* パスワード未入力警告文表示 */}
+      {pass_display_flg && (
+        <div>
+          パスワードが入力されていません
+          <br />
+        </div>
+      )}
+      {/* パスワード不一致警告文表示 */}
+      {pass2_display_flg && (
+        <div>
+          パスワードが一致しません
+          <br />
+        </div>
+      )}
+      {can_move_next_page ? (
+        <form method="post" action="staff_add_done">
+          <input type="hidden" name="name" value={staff_name} />
+          <input type="hidden" name="pass" value={staff_pass} />
+          <br />
+          <input type="button" onClick={() => router.back()} value="戻る" />
+          <input type="submit" value="OK" />
+        </form>
+      ) : (
+        <form>
+          <input type="button" onClick={() => router.back()} value="戻る" />
+        </form>
+      )}
+    </React.Fragment>
   );
   //#endregion JSX
 };

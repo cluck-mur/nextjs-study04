@@ -1,6 +1,6 @@
 /***************************************************
  *
- * スタッフリスト画面
+ * スタッフ ポータル画面
  *
  ***************************************************/
 import React from "react";
@@ -9,19 +9,20 @@ import Head from "next/head";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import path from "path";
-import { dbFilePath, dbFileName } from "../../lib/global_const";
-import { GenJsxMessage } from "../../lib/myUtils";
+import {
+  dbFilePath,
+  dbFileName,
+  msgElementHttpReqError,
+  msgElementSystemError,
+} from "../../lib/global_const";
 
 type StaffListParam = {
   is_exception: boolean;
-  display_message: string[];
   staffs: {
     name: string;
     code: number;
   }[];
 };
-
-const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
 
 /**
  * スタッフ選択フォームを生成
@@ -31,9 +32,14 @@ const GenSelectStaffFormChildren = (staffListParam: StaffListParam) => {
   const items = [];
   staffListParam.staffs.map((staff) => {
     items.push(
-      <React.Fragment key={staff.code}>
-        <input type="radio" name="staffcode" value={staff.code} />
-        {staff.name}
+      <React.Fragment>
+        <input
+          key={staff.code}
+          type="radio"
+          name="staffcode"
+          value={staff.code}
+        />
+        {staff.code}: {staff.name}
         <br />
       </React.Fragment>
     );
@@ -42,36 +48,55 @@ const GenSelectStaffFormChildren = (staffListParam: StaffListParam) => {
 };
 
 /**
- * スタッフリスト
+ * スタッフ ポータル
  * @param staffListParam
  */
 const StaffList = (staffListParam: StaffListParam) => {
+  const items = [];
+  items.push(
+    <React.Fragment>
+      <Head>
+        <meta charSet="UTF-8" />
+        <title>ろくまる農園 スタッフ ポータル</title>
+      </Head>
+    </React.Fragment>
+  );
+
   if (!staffListParam.is_exception) {
-    return (
+    items.push(
       <React.Fragment>
-        <Head>
-          <meta charSet="UTF-8" />
-          <title>ろくまる農園 スタッフ一覧</title>
-        </Head>
-        スタッフ一覧
-        <br />
+        <h2>スタッフ ポータル</h2>
         <br />
         {/* 分岐画面へ移行する */}
         {/*
         <form method="post" action="staff_branch">
         */}
         <form method="post" action="staff_edit">
+          新たにスタッフを登録する場合にはこちら
+          <br />
+          <input type="submit" name="add" value="追加" style={{ width: 128 }} />
+          <br />
+          <br />
+          <br />
+          登録済みスタッフについての操作はこちら
+          <br />
+          ※スタッフを選択し、操作したい内容のボタンを押してください。
+          <br />
+          <br />
           {GenSelectStaffFormChildren(staffListParam)}
           <input type="submit" name="disp" value="参照" />
-          <input type="submit" name="add" value="追加" />
           <input type="submit" name="edit" value="修正" />
           <input type="submit" name="delete" value="削除" />
         </form>
       </React.Fragment>
     );
   } else {
-    return GenJsxMessage(staffListParam.display_message);
+    //#region エラーメッセージを表示
+    items.push(<React.Fragment>{msgElementSystemError}</React.Fragment>)
+    //#endregion エラーメッセージを表示
   }
+
+  return <React.Fragment>{items}</React.Fragment>;
 };
 
 /**
@@ -81,14 +106,13 @@ const StaffList = (staffListParam: StaffListParam) => {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   //#region DBへstaffを追加
   // DBファイルのパスを取得
+  const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
   const filename: string = dbFileName;
   const fullPath: string = path.join(dbWorkDirectory, filename);
 
   let is_exception = false;
-  const display_message: string[] = [];
   let staffListParam: StaffListParam = {
     is_exception: is_exception,
-    display_message: [],
     staffs: Array(),
   };
   try {
@@ -106,10 +130,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     //console.log(staffListParam);
   } catch (e) {
     is_exception = true;
-    display_message.push("ただいま障害により大変ご迷惑をお掛けしております。");
   } finally {
     staffListParam.is_exception = is_exception;
-    staffListParam.display_message = display_message;
   }
   //#endregion DBへstaffを追加
 

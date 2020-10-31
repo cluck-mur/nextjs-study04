@@ -1,6 +1,6 @@
 /***************************************************
  *
- * スタッフ追加 入力値チェック 画面
+ * スタッフ修正 入力値チェック 画面
  *
  ***************************************************/
 import React from "react";
@@ -16,23 +16,25 @@ import {
   msgElementSystemError,
 } from "../../lib/global_const";
 
-type StaffAddCheckParam = {
+type StaffEditCheckParam = {
   is_post: boolean;
   is_exception: boolean;
+  code: number | undefined;
   name: string | undefined;
   pass: string | undefined;
   pass2: string | undefined;
 };
 
 /**
- * スタッフ追加 入力値チェック
- * @param staffAddCheckParam 
+ * スタッフ修正 入力値チェック
+ * @param staffEditCheckParam 
  */
-const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
+const StaffEditCheck = (staffEditCheckParam: StaffEditCheckParam) => {
   //#region 前画面からデータを受け取る
-  const staff_name = staffAddCheckParam.name;
-  let staff_pass = staffAddCheckParam.pass;
-  const staff_pass2 = staffAddCheckParam.pass2;
+  const staff_code = staffEditCheckParam.code;
+  const staff_name = staffEditCheckParam.name;
+  let staff_pass = staffEditCheckParam.pass;
+  const staff_pass2 = staffEditCheckParam.pass2;
   //#endregion 前画面からデータを受け取る
 
   const items = [];
@@ -40,12 +42,12 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
     <React.Fragment>
       <Head>
         <meta charSet="UTF-8" />
-        <title>ろくまる農園 スタッフ追加チェック</title>
+        <title>ろくまる農園 スタッフ修正チェック</title>
       </Head>
     </React.Fragment>
   );
 
-  if (staffAddCheckParam.is_post && !staffAddCheckParam.is_exception) {
+  if (staffEditCheckParam.is_post && !staffEditCheckParam.is_exception) {
     const router = useRouter();
 
     //#region 画面用データを設定
@@ -90,10 +92,10 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
           <React.Fragment>
             <Head>
               <meta charSet="UTF-8" />
-              <title>ろくまる農園 スタッフ追加 確認</title>
+              <title>ろくまる農園 スタッフ修正 確認</title>
             </Head>
-            <h2>スタッフ追加 確認</h2>
-            以下のスタッフを追加します。
+            <h2>スタッフ修正 確認</h2>
+            以下のスタッフを修正します。
             <br />
             よろしいですか？
             <br />
@@ -102,6 +104,8 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
         ) : (
           <React.Fragment></React.Fragment>
         )}
+        {/* スタッフコード表示 */}
+        <div>コード : {staff_code}</div>
         {/* スタッフ名表示 */}
         <div>{name_str}</div>
         {/* パスワード未入力警告文表示 */}
@@ -119,11 +123,16 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
           </div>
         )}
         {can_move_next_page ? (
-          <form method="post" action="staff_add_done">
+          <form method="post" action="staff_edit_done">
+            <input type="hidden" name="code" value={staff_code} />
             <input type="hidden" name="name" value={staff_name} />
             <input type="hidden" name="pass" value={staff_pass} />
             <br />
-            <input type="button" onClick={() => router.back()} value="戻る" />
+            <input
+              type="button"
+              onClick={() => router.push("staff_list")}
+              value="戻る"
+            />
             <input type="submit" value="OK" />
           </form>
         ) : (
@@ -135,10 +144,10 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
     );
     //#endregion JSX
   } else {
-    if (!staffAddCheckParam.is_post) {
+    if (!staffEditCheckParam.is_post) {
       items.push(msgElementHttpReqError);
     }
-    if (staffAddCheckParam.is_exception) {
+    if (staffEditCheckParam.is_exception) {
       items.push(msgElementSystemError);
     }
   }
@@ -151,9 +160,10 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
  * @param context
  */
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  let staffAddCheckParam: StaffAddCheckParam = {
+  let staffEditCheckParam: StaffEditCheckParam = {
     is_post: true,
     is_exception: false,
+    code: null,
     name: "",
     pass: "",
     pass2: "",
@@ -165,21 +175,23 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const body_string = body.toString();
     const body_json = formUrlDecoded(body_string);
     //console.log(body_json)
+    const code = typeof body_json.name == "undefined" ? null : body_json.code;
     const name = typeof body_json.name == "undefined" ? "" : body_json.name;
     const pass = typeof body_json.pass == "undefined" ? "" : body_json.pass;
     const pass2 = typeof body_json.pass2 == "undefined" ? "" : body_json.pass2;
     //console.log(staff_add_param);
-    staffAddCheckParam.name = htmlspecialchars(name);
-    staffAddCheckParam.pass = htmlspecialchars(pass);
-    staffAddCheckParam.pass2 = htmlspecialchars(pass2);
+    staffEditCheckParam.code = code;
+    staffEditCheckParam.name = htmlspecialchars(name);
+    staffEditCheckParam.pass = htmlspecialchars(pass);
+    staffEditCheckParam.pass2 = htmlspecialchars(pass2);
     //#endregion POSTメッセージからパラメータを取得する
   } else {
-    staffAddCheckParam.is_post = false;
+    staffEditCheckParam.is_post = false;
   }
 
   return {
-    props: staffAddCheckParam,
+    props: staffEditCheckParam,
   };
 };
 
-export default StaffAddCheck;
+export default StaffEditCheck;

@@ -1,74 +1,88 @@
 /***************************************************
  *
- * スタッフ情報修正画面 SSR版
+ * スタッフ修正画面
  *
  ***************************************************/
 import React from "react";
-import { useState } from "react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import path from "path";
-import { dbFilePath, dbFileName } from "../../lib/global_const";
 import getRawBody from "raw-body";
 import formUrlDecoded from "form-urldecoded";
 import htmlspecialchars from "htmlspecialchars";
-import md5 from "md5";
-import { GenJsxMessage } from "../../lib/myUtils";
+import {
+  dbFilePath,
+  dbFileName,
+  msgElementHttpReqError,
+  msgElementSystemError,
+  staffNameMaxLegth,
+} from "../../lib/global_const";
 
 type StaffEditParam = {
   is_post: boolean;
   is_exception: boolean;
-  display_message: string[];
   staff_code: number;
   staff_name: string;
 };
 
-const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
-
 /**
- * スタッフ情報修正
+ * スタッフ修正
  * @param staffEditParam
  */
 const StaffEdit = (staffEditParam: StaffEditParam) => {
-  const [value, setValue] = useState("");
-
   //#region 前画面からデータを受け取る
-  const staff_name = htmlspecialchars(staffEditParam.staff_name);
+  const staff_name = staffEditParam.staff_name;
   const router = useRouter();
   //#endregion 前画面からデータを受け取る
 
-  if (staffEditParam.is_post && !staffEditParam.is_exception) {
-    const onChangeEvent = (event) => {
-      setValue(event.target.value);
-    };
+  const items = [];
+  items.push(
+    <React.Fragment>
+      <Head>
+        <meta charSet="UTF-8" />
+        <title>ろくまる農園 スタッフ修正</title>
+      </Head>
+    </React.Fragment>
+  );
 
-    return (
+  if (staffEditParam.is_post && !staffEditParam.is_exception) {
+    items.push(
       <React.Fragment>
-        <Head>
-          <meta charSet="UTF-8" />
-          <title>ろくまる農園 スタッフ情報修正</title>
-        </Head>
-        スタッフ情報修正
+        <h2>スタッフ修正</h2>
+        ※スタッフの名前とパスワードを変更します。
         <br />
         <br />
-        スタッフコード
+        {/* スタッフコード
         <br />
         {staffEditParam.staff_code}
-        <br />
+        <br /> */}
         <form method="post" action="staff_edit_check">
-          <input type="hidden" name="code" value={staffEditParam.staff_code} />
+          スタッフコード
+          <br />
+          {/* <input type="hidden" name="code" value={staffEditParam.staff_code} /> */}
+          <input
+            type="text"
+            name="code"
+            width="200px"
+            readOnly
+            style={{ background: "#dddddd" }}
+            defaultValue={staffEditParam.staff_code}
+          />
+          <br />
           スタッフ名
           <br />
           <input
             type="text"
             name="name"
             width="200px"
+            maxLength={staffNameMaxLegth}
             defaultValue={staff_name}
             //onChange={onChangeEvent}
-          />
+          />{" "}
+          最大14文字
           <br />
           パスワードを入力してください。
           <br />
@@ -85,8 +99,17 @@ const StaffEdit = (staffEditParam: StaffEditParam) => {
       </React.Fragment>
     );
   } else {
-    return GenJsxMessage(staffEditParam.display_message);
+    //#region エラーメッセージを表示
+    if (!staffEditParam.is_post) {
+      items.push(msgElementHttpReqError);
+    }
+    if (staffEditParam.is_exception) {
+      items.push(msgElementSystemError);
+    }
+    //#endregion エラーメッセージを表示
   }
+
+  return <React.Fragment>{items}</React.Fragment>;
 };
 
 /**
@@ -97,7 +120,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   let staffEditParam: StaffEditParam = {
     is_post: true,
     is_exception: false,
-    display_message: [],
     staff_code: null,
     staff_name: "",
   };
@@ -115,10 +137,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     //#region DBへstaffを追加
     // DBファイルのパスを取得
+    const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
     const filename: string = dbFileName;
     const fullPath: string = path.join(dbWorkDirectory, filename);
     let is_exception: boolean = false;
-    let display_message: string[] = [];
     try {
       // DBオープン
       const db = await open({
@@ -135,32 +157,20 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         const staff_name = staff[0].name;
 
         staffEditParam.staff_code = staffcode;
-        staffEditParam.staff_name = staff_name;
+        staffEditParam.staff_name = htmlspecialchars(staff_name);
       } else if (staff.length < 1) {
         is_exception = true;
-        display_message.push("指定されたスタッフは見つかりませんでした。");
-        display_message.push("申し訳ありませんがもう一度やり直してください。");
       } else {
         is_exception = true;
-        display_message.push("指定されたスタッフは重複して登録されています。");
-        display_message.push("申し訳ありませんがもう一度やり直してください。");
       }
     } catch (e) {
       is_exception = true;
-      display_message.push(
-        "ただいま障害により大変ご迷惑をお掛けしております。"
-      );
     } finally {
       staffEditParam.is_exception = is_exception;
-      staffEditParam.display_message = display_message;
     }
     //#endregion DBへstaffを追加
   } else {
     staffEditParam.is_post = false;
-    staffEditParam.display_message.push("原因不明のエラーが発生しました。");
-    staffEditParam.display_message.push(
-      "申し訳ありませんがもう一度やり直してください。"
-    );
   }
 
   return {

@@ -7,6 +7,7 @@ import React from "react";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
+import { staffNameMaxLegth } from "../../lib/global_const";
 
 /**
  * スタッフ追加
@@ -15,19 +16,27 @@ import Head from "next/head";
 const StaffAdd = ({}) => {
   const router = useRouter();
 
-  return (
+  const items = [];
+  items.push(
     <React.Fragment>
       <Head>
         <meta charSet="UTF-8" />
         <title>ろくまる農園 スタッフ追加</title>
       </Head>
-      スタッフ追加
+      <h2>スタッフ追加</h2>
+      ※スタッフを新たに登録します。
       <br />
       <br />
       <form method="post" action="staff_add_check">
         スタッフ名を入力してください。
         <br />
-        <input type="text" name="name" width="200px" />
+        <input
+          type="text"
+          name="name"
+          width="200px"
+          maxLength={staffNameMaxLegth}
+        />{" "}
+        最大14文字
         <br />
         パスワードを入力してください。
         <br />
@@ -43,6 +52,8 @@ const StaffAdd = ({}) => {
       </form>
     </React.Fragment>
   );
+
+  return <React.Fragment>{items}</React.Fragment>;
 };
 
 /**

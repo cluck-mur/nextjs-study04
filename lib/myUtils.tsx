@@ -43,5 +43,5 @@ export const CompReferer = (
 
   const referer_cuthttp: string[] = referer.split("//", 2);
   const compare_str = host + page_str;
-  return referer_cuthttp[1] == compare_str;
+  return referer_cuthttp[1].startsWith(compare_str);
 };

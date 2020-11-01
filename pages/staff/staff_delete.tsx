@@ -1,6 +1,6 @@
 /***************************************************
  *
- * スタッフ修正画面
+ * スタッフ削除画面
  *
  ***************************************************/
 import React from "react";
@@ -21,7 +21,7 @@ import {
   msgElementStaffWasMultipleExisted,
 } from "../../lib/global_const";
 
-type StaffEditParam = {
+type StaffDeleteParam = {
   is_null_staffcode: boolean;
   is_noexist_staffcode: boolean;
   is_multipleexist_staffcode: boolean;
@@ -30,17 +30,17 @@ type StaffEditParam = {
   staff_name: string;
 };
 
-const next_page: string = "/staff/staff_edit_check";
+const next_page: string = "/staff/staff_delete_done";
 const previous_page: string = "/staff/staff_list";
 const redirect_page: string = "/staff/staff_list";
 
 /**
  * スタッフ修正
- * @param staffEditParam
+ * @param staffDeleteParam
  */
-const StaffEdit = (staffEditParam: StaffEditParam) => {
+const StaffEdit = (staffDeleteParam: StaffDeleteParam) => {
   //#region 前画面からデータを受け取る
-  const staff_name = staffEditParam.staff_name;
+  const staff_name = staffDeleteParam.staff_name;
   const router = useRouter();
   //#endregion 前画面からデータを受け取る
 
@@ -49,14 +49,14 @@ const StaffEdit = (staffEditParam: StaffEditParam) => {
     <React.Fragment>
       <Head>
         <meta charSet="UTF-8" />
-        <title>ろくまる農園 スタッフ修正</title>
+        <title>ろくまる農園 スタッフ削除</title>
       </Head>
-      <h2>スタッフ修正</h2>
+      <h2>スタッフ削除</h2>
     </React.Fragment>
   );
 
-  if (!staffEditParam.is_exception) {
-    if (staffEditParam.is_null_staffcode) {
+  if (!staffDeleteParam.is_exception) {
+    if (staffDeleteParam.is_null_staffcode) {
       items.push(msgElementStaffWasNotSelected);
       items.push(
         <React.Fragment>
@@ -68,12 +68,12 @@ const StaffEdit = (staffEditParam: StaffEditParam) => {
           />
         </React.Fragment>
       );
-    } else if (staffEditParam.is_noexist_staffcode) {
+    } else if (staffDeleteParam.is_noexist_staffcode) {
       items.push(msgElementStaffWasNotExisted);
       items.push(
         <React.Fragment>
           <br />
-          スタッフコード: {staffEditParam.staff_code} 
+          スタッフコード: {staffDeleteParam.staff_code} 
           <br />
           <input
             type="button"
@@ -82,12 +82,12 @@ const StaffEdit = (staffEditParam: StaffEditParam) => {
           />
         </React.Fragment>
       );
-    } else if (staffEditParam.is_multipleexist_staffcode) {
+    } else if (staffDeleteParam.is_multipleexist_staffcode) {
       items.push(msgElementStaffWasMultipleExisted)
       items.push(
         <React.Fragment>
           <br />
-          スタッフコード: {staffEditParam.staff_code} 
+          スタッフコード: {staffDeleteParam.staff_code} 
           <br />
           <input
             type="button"
@@ -99,24 +99,27 @@ const StaffEdit = (staffEditParam: StaffEditParam) => {
     } else {
       items.push(
         <React.Fragment>
-          ※スタッフの名前とパスワードを変更します。
+          ※スタッフを削除します。
           <br />
           <br />
           {/* スタッフコード
         <br />
-        {staffEditParam.staff_code}
+        {staffDeleteParam.staff_code}
         <br /> */}
           <form method="post" action={next_page}>
+            このスタッフを削除してよろしいですか？
+            <br />
+            <br />
             スタッフコード
             <br />
-            {/* <input type="hidden" name="code" value={staffEditParam.staff_code} /> */}
+            {/* <input type="hidden" name="code" value={staffDeleteParam.staff_code} /> */}
             <input
               type="text"
               name="code"
               width="200px"
               readOnly
               style={{ background: "#dddddd" }}
-              defaultValue={staffEditParam.staff_code}
+              defaultValue={staffDeleteParam.staff_code}
             />
             <br />
             スタッフ名
@@ -125,19 +128,12 @@ const StaffEdit = (staffEditParam: StaffEditParam) => {
               type="text"
               name="name"
               width="200px"
+              readOnly
+              style={{ background: "#dddddd" }}
               maxLength={staffNameMaxLegth}
               defaultValue={staff_name}
               //onChange={onChangeEvent}
-            />{" "}
-            最大14文字
-            <br />
-            パスワードを入力してください。
-            <br />
-            <input type="password" name="pass" width="100px" />
-            <br />
-            パスワードをもう一度入力してください。
-            <br />
-            <input type="password" name="pass2" width="100px" />
+            />
             <br />
             <br />
             <input type="button" onClick={() => router.back()} value="戻る" />
@@ -148,7 +144,7 @@ const StaffEdit = (staffEditParam: StaffEditParam) => {
     }
   } else {
     //#region エラーメッセージを表示
-    if (staffEditParam.is_exception) {
+    if (staffDeleteParam.is_exception) {
       items.push(msgElementSystemError);
     }
     //#endregion エラーメッセージを表示
@@ -174,7 +170,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   //#endregion refererチェック
 
   if (refcomp_result) {
-    let staffEditParam: StaffEditParam = {
+    let staffDeleteParam: StaffDeleteParam = {
       is_null_staffcode: false,
       is_noexist_staffcode: false,
       is_multipleexist_staffcode: false,
@@ -198,7 +194,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     //#endregion POSTメッセージからパラメータを取得する
 
     if (staffcode != null) {
-      staffEditParam.staff_code = staffcode;
+      staffDeleteParam.staff_code = staffcode;
 
       //#region DBへstaffを追加
       // DBファイルのパスを取得
@@ -220,23 +216,23 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         // console.log(staff);
         if (staff.length == 1) {
           const staff_name = staff[0].name;
-          staffEditParam.staff_name = htmlspecialchars(staff_name);
+          staffDeleteParam.staff_name = htmlspecialchars(staff_name);
         } else if (staff.length < 1) {
-          staffEditParam.is_noexist_staffcode = true;
+          staffDeleteParam.is_noexist_staffcode = true;
         } else {
-          staffEditParam.is_multipleexist_staffcode = true;
+          staffDeleteParam.is_multipleexist_staffcode = true;
         }
       } catch (e) {
         is_exception = true;
       } finally {
-        staffEditParam.is_exception = is_exception;
+        staffDeleteParam.is_exception = is_exception;
       }
     } else {
-      staffEditParam.is_null_staffcode = true;
+      staffDeleteParam.is_null_staffcode = true;
     }
     //#endregion DBへstaffを追加
     return {
-      props: staffEditParam,
+      props: staffDeleteParam,
     };
   } else {
     if (context.res) {

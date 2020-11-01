@@ -24,6 +24,10 @@ type StaffListParam = {
   }[];
 };
 
+const next_page: string = "/staff/staff_branch";
+// const previous_page: string = "/staff/staff_list";
+// const redirect_page: string = "/staff/staff_list";
+
 /**
  * スタッフ選択フォームを生成
  * @param staffListParam
@@ -71,7 +75,7 @@ const StaffList = (staffListParam: StaffListParam) => {
         {/*
         <form method="post" action="staff_branch">
         */}
-        <form method="post" action="staff_edit">
+        <form method="post" action={next_page}>
           新たにスタッフを登録する場合にはこちら
           <br />
           <input type="submit" name="add" value="追加" style={{ width: 128 }} />

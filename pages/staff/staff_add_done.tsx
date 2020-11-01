@@ -28,12 +28,13 @@ type StaffAddDoneParam = {
 
 const previous_page: string = "/staff/staff_add_check";
 const redirect_page: string = "/staff/staff_add";
+const return_page: string = "/staff/staff_list"
 
 /**
  * スタッフ追加 完了
  * @param staffAddDoneParam
  */
-const StaffSddDone = (staffAddDoneParam: StaffAddDoneParam) => {
+const StaffAddDone = (staffAddDoneParam: StaffAddDoneParam) => {
   const router = useRouter();
 
   const items = [];
@@ -52,6 +53,7 @@ const StaffSddDone = (staffAddDoneParam: StaffAddDoneParam) => {
         <h2>スタッフ追加 完了</h2>
         {staffAddDoneParam.staff_name} さんを追加しました。
         <br />
+        <input type="button" onClick={() => {router.push(return_page)}} value="スタッフポータルへ" />
       </React.Fragment>
     );
   } else {
@@ -143,4 +145,4 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 };
 
-export default StaffSddDone;
+export default StaffAddDone;

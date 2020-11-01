@@ -15,18 +15,22 @@ import {
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";
+import { CompReferer } from "../../lib/myUtils";
 
 type StaffAddCheckParam = {
-  is_post: boolean;
   is_exception: boolean;
   name: string | undefined;
   pass: string | undefined;
   pass2: string | undefined;
 };
 
+const next_page: string = "/staff/staff_add_done";
+const previous_page: string = "/staff/staff_add";
+const redirect_page: string = "/staff/staff_add";
+
 /**
  * スタッフ追加 入力値チェック
- * @param staffAddCheckParam 
+ * @param staffAddCheckParam
  */
 const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
   //#region 前画面からデータを受け取る
@@ -37,7 +41,7 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
 
   const items = [];
   items.push(
-    <React.Fragment>
+    <React.Fragment key="head">
       <Head>
         <meta charSet="UTF-8" />
         <title>ろくまる農園 スタッフ追加チェック</title>
@@ -45,7 +49,7 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
     </React.Fragment>
   );
 
-  if (staffAddCheckParam.is_post && !staffAddCheckParam.is_exception) {
+  if (!staffAddCheckParam.is_exception) {
     const router = useRouter();
 
     //#region 画面用データを設定
@@ -84,14 +88,10 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
 
     //#region JSX
     items.push(
-      <React.Fragment>
+      <React.Fragment key="main">
         {/* もし入力に問題があったら "戻る"ボタンだけを表示する */}
         {can_move_next_page ? (
-          <React.Fragment>
-            <Head>
-              <meta charSet="UTF-8" />
-              <title>ろくまる農園 スタッフ追加 確認</title>
-            </Head>
+          <React.Fragment key="success">
             <h2>スタッフ追加 確認</h2>
             以下のスタッフを追加します。
             <br />
@@ -100,7 +100,7 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
             <br />
           </React.Fragment>
         ) : (
-          <React.Fragment></React.Fragment>
+          <React.Fragment key="success"></React.Fragment>
         )}
         {/* スタッフ名表示 */}
         <div>{name_str}</div>
@@ -119,7 +119,7 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
           </div>
         )}
         {can_move_next_page ? (
-          <form method="post" action="staff_add_done">
+          <form method="post" action={next_page}>
             <input type="hidden" name="name" value={staff_name} />
             <input type="hidden" name="pass" value={staff_pass} />
             <br />
@@ -135,9 +135,6 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
     );
     //#endregion JSX
   } else {
-    if (!staffAddCheckParam.is_post) {
-      items.push(msgElementHttpReqError);
-    }
     if (staffAddCheckParam.is_exception) {
       items.push(msgElementSystemError);
     }
@@ -151,35 +148,49 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
  * @param context
  */
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  let staffAddCheckParam: StaffAddCheckParam = {
-    is_post: true,
-    is_exception: false,
-    name: "",
-    pass: "",
-    pass2: "",
-  };
+  //#region refererチェック
+  const refcomp_result = CompReferer(
+    context.req.headers.referer,
+    context.req.headers.host,
+    previous_page
+  );
+  //#endregion refererチェック
 
-  if (context.req.method == "POST") {
+  if (context.req.method == "POST" && refcomp_result) {
+    let staffAddCheckParam: StaffAddCheckParam = {
+      is_exception: false,
+      name: "",
+      pass: "",
+      pass2: "",
+    };
+
     //#region POSTメッセージからパラメータを取得する
     const body = await getRawBody(context.req);
     const body_string = body.toString();
     const body_json = formUrlDecoded(body_string);
     //console.log(body_json)
+
     const name = typeof body_json.name == "undefined" ? "" : body_json.name;
     const pass = typeof body_json.pass == "undefined" ? "" : body_json.pass;
     const pass2 = typeof body_json.pass2 == "undefined" ? "" : body_json.pass2;
     //console.log(staff_add_param);
+
     staffAddCheckParam.name = htmlspecialchars(name);
     staffAddCheckParam.pass = htmlspecialchars(pass);
     staffAddCheckParam.pass2 = htmlspecialchars(pass2);
     //#endregion POSTメッセージからパラメータを取得する
-  } else {
-    staffAddCheckParam.is_post = false;
-  }
 
-  return {
-    props: staffAddCheckParam,
-  };
+    return {
+      props: staffAddCheckParam,
+    };
+  } else {
+    if (context.res) {
+      context.res.writeHead(303, { Location: redirect_page });
+      context.res.end();
+    }
+
+    return { props: {} };
+  }
 };
 
 export default StaffAddCheck;

@@ -19,13 +19,17 @@ import {
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";
+import { CompReferer } from "../../lib/myUtils";
 
 type StaffEditDoneParam = {
-  is_post: boolean;
   is_exception: boolean;
   staff_code: number;
   staff_name: string;
 };
+
+//const next_page: string = "/staff/staff_edit_check";
+const previous_page: string = "/staff/staff_edit_check";
+const redirect_page: string = "/staff/staff_list";
 
 /**
  * スタッフ修正 完了
@@ -44,7 +48,7 @@ const StaffSddDone = (staffEditDoneParam: StaffEditDoneParam) => {
     </React.Fragment>
   );
 
-  if (staffEditDoneParam.is_post && !staffEditDoneParam.is_exception) {
+  if (!staffEditDoneParam.is_exception) {
     items.push(
       <React.Fragment>
         <h2>スタッフ修正 完了</h2>
@@ -54,9 +58,6 @@ const StaffSddDone = (staffEditDoneParam: StaffEditDoneParam) => {
     );
   } else {
     //#region エラーメッセージを表示
-    if (!staffEditDoneParam.is_post) {
-      items.push(msgElementHttpReqError);
-    }
     if (staffEditDoneParam.is_exception) {
       items.push(msgElementSystemError);
     }
@@ -71,15 +72,22 @@ const StaffSddDone = (staffEditDoneParam: StaffEditDoneParam) => {
  * @param context
  */
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  let staffEditDoneParam: StaffEditDoneParam = {
-    is_post: true,
-    is_exception: false,
-    staff_code: null,
-    staff_name: "",
-  };
+  //#region refererチェック
+  const refcomp_result = CompReferer(
+    context.req.headers.referer,
+    context.req.headers.host,
+    previous_page
+  );
+  //#endregion refererチェック
 
   //#region POSTメッセージからパラメータを取得する
-  if (context.req.method == "POST") {
+  if (context.req.method == "POST" && refcomp_result) {
+    let staffEditDoneParam: StaffEditDoneParam = {
+      is_exception: false,
+      staff_code: null,
+      staff_name: "",
+    };
+
     const body = await getRawBody(context.req);
     const body_string = body.toString();
     const body_json = formUrlDecoded(body_string);
@@ -124,22 +132,23 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
     //#endregion DBへstaffを追加
 
-    staffEditDoneParam.is_post = true;
     staffEditDoneParam.is_exception = is_exception;
     staffEditDoneParam.staff_code = staff_code;
     staffEditDoneParam.staff_name = staff_name;
     //console.log(staff_add_param);
+
+    return {
+      props: staffEditDoneParam,
+    };
   } else {
-    staffEditDoneParam.is_post = false;
-    staffEditDoneParam.is_exception = false;
-    staffEditDoneParam.staff_code = null;
-    staffEditDoneParam.staff_name = "";
+    if (context.res) {
+      context.res.writeHead(303, { Location: redirect_page });
+      context.res.end();
+    }
+
+    return { props: {} };
   }
   //#endregion POSTメッセージからパラメータを取得する
-
-  return {
-    props: staffEditDoneParam,
-  };
 };
 
 export default StaffSddDone;

@@ -15,9 +15,9 @@ import {
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";
+import { CompReferer } from "../../lib/myUtils";
 
 type StaffEditCheckParam = {
-  is_post: boolean;
   is_exception: boolean;
   code: number | undefined;
   name: string | undefined;
@@ -25,9 +25,13 @@ type StaffEditCheckParam = {
   pass2: string | undefined;
 };
 
+const next_page: string = "/staff/staff_edit_done";
+const previous_page: string = "/staff/staff_edit";
+const redirect_page: string = "/staff/staff_list";
+
 /**
  * スタッフ修正 入力値チェック
- * @param staffEditCheckParam 
+ * @param staffEditCheckParam
  */
 const StaffEditCheck = (staffEditCheckParam: StaffEditCheckParam) => {
   //#region 前画面からデータを受け取る
@@ -47,7 +51,7 @@ const StaffEditCheck = (staffEditCheckParam: StaffEditCheckParam) => {
     </React.Fragment>
   );
 
-  if (staffEditCheckParam.is_post && !staffEditCheckParam.is_exception) {
+  if (!staffEditCheckParam.is_exception) {
     const router = useRouter();
 
     //#region 画面用データを設定
@@ -123,7 +127,7 @@ const StaffEditCheck = (staffEditCheckParam: StaffEditCheckParam) => {
           </div>
         )}
         {can_move_next_page ? (
-          <form method="post" action="staff_edit_done">
+          <form method="post" action={next_page}>
             <input type="hidden" name="code" value={staff_code} />
             <input type="hidden" name="name" value={staff_name} />
             <input type="hidden" name="pass" value={staff_pass} />
@@ -144,9 +148,6 @@ const StaffEditCheck = (staffEditCheckParam: StaffEditCheckParam) => {
     );
     //#endregion JSX
   } else {
-    if (!staffEditCheckParam.is_post) {
-      items.push(msgElementHttpReqError);
-    }
     if (staffEditCheckParam.is_exception) {
       items.push(msgElementSystemError);
     }
@@ -160,17 +161,24 @@ const StaffEditCheck = (staffEditCheckParam: StaffEditCheckParam) => {
  * @param context
  */
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  let staffEditCheckParam: StaffEditCheckParam = {
-    is_post: true,
-    is_exception: false,
-    code: null,
-    name: "",
-    pass: "",
-    pass2: "",
-  };
+  //#region refererチェック
+  const refcomp_result = CompReferer(
+    context.req.headers.referer,
+    context.req.headers.host,
+    previous_page
+  );
+  //#endregion refererチェック
 
-  if (context.req.method == "POST") {
-    //#region POSTメッセージからパラメータを取得する
+  if (context.req.method == "POST" && refcomp_result) {
+    let staffEditCheckParam: StaffEditCheckParam = {
+      is_exception: false,
+      code: null,
+      name: "",
+      pass: "",
+      pass2: "",
+    };
+
+      //#region POSTメッセージからパラメータを取得する
     const body = await getRawBody(context.req);
     const body_string = body.toString();
     const body_json = formUrlDecoded(body_string);
@@ -185,13 +193,18 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     staffEditCheckParam.pass = htmlspecialchars(pass);
     staffEditCheckParam.pass2 = htmlspecialchars(pass2);
     //#endregion POSTメッセージからパラメータを取得する
-  } else {
-    staffEditCheckParam.is_post = false;
-  }
 
-  return {
-    props: staffEditCheckParam,
-  };
+    return {
+      props: staffEditCheckParam,
+    };
+  } else {
+    if (context.res) {
+      context.res.writeHead(303, { Location: redirect_page });
+      context.res.end();
+    }
+
+    return { props: {} };
+  }
 };
 
 export default StaffEditCheck;

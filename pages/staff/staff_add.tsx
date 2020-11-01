@@ -18,7 +18,7 @@ const StaffAdd = ({}) => {
 
   const items = [];
   items.push(
-    <React.Fragment>
+    <React.Fragment key="success">
       <Head>
         <meta charSet="UTF-8" />
         <title>ろくまる農園 スタッフ追加</title>

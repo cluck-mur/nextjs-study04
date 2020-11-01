@@ -19,12 +19,15 @@ import {
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";
+import { CompReferer } from "../../lib/myUtils";
 
 type StaffAddDoneParam = {
-  is_post: boolean;
   is_exception: boolean;
   staff_name: string;
 };
+
+const previous_page: string = "/staff/staff_add_check";
+const redirect_page: string = "/staff/staff_add";
 
 /**
  * スタッフ追加 完了
@@ -35,7 +38,7 @@ const StaffSddDone = (staffAddDoneParam: StaffAddDoneParam) => {
 
   const items = [];
   items.push(
-    <React.Fragment>
+    <React.Fragment key="head">
       <Head>
         <meta charSet="UTF-8" />
         <title>ろくまる農園 スタッフ追加 完了</title>
@@ -43,9 +46,9 @@ const StaffSddDone = (staffAddDoneParam: StaffAddDoneParam) => {
     </React.Fragment>
   );
 
-  if (staffAddDoneParam.is_post && !staffAddDoneParam.is_exception) {
+  if (!staffAddDoneParam.is_exception) {
     items.push(
-      <React.Fragment>
+      <React.Fragment key="success">
         <h2>スタッフ追加 完了</h2>
         {staffAddDoneParam.staff_name} さんを追加しました。
         <br />
@@ -53,9 +56,6 @@ const StaffSddDone = (staffAddDoneParam: StaffAddDoneParam) => {
     );
   } else {
     //#region エラーメッセージを表示
-    if (!staffAddDoneParam.is_post) {
-      items.push(msgElementHttpReqError);
-    }
     if (staffAddDoneParam.is_exception) {
       items.push(msgElementSystemError);
     }
@@ -70,14 +70,21 @@ const StaffSddDone = (staffAddDoneParam: StaffAddDoneParam) => {
  * @param context
  */
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  let staffAddDoneParam: StaffAddDoneParam = {
-    is_post: true,
-    is_exception: false,
-    staff_name: "string",
-  };
+  //#region refererチェック
+  const refcomp_result = CompReferer(
+    context.req.headers.referer,
+    context.req.headers.host,
+    previous_page
+  );
+  //#endregion refererチェック
 
-  //#region POSTメッセージからパラメータを取得する
-  if (context.req.method == "POST") {
+  if (context.req.method == "POST" && refcomp_result) {
+    let staffAddDoneParam: StaffAddDoneParam = {
+      is_exception: false,
+      staff_name: "",
+    };
+
+    //#region POSTメッセージからパラメータを取得する
     const body = await getRawBody(context.req);
     const body_string = body.toString();
     const body_json = formUrlDecoded(body_string);
@@ -85,10 +92,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const name = typeof body_json.name == "undefined" ? "" : body_json.name;
     const pass = typeof body_json.pass == "undefined" ? "" : body_json.pass;
 
-    //#region 前画面からデータを受け取る
     const staff_name = htmlspecialchars(name);
     const staff_pass = htmlspecialchars(pass);
-    //#endregion 前画面からデータを受け取る
+    //#endregion POSTメッセージからパラメータを取得する
 
     //#region DBへstaffを追加
     // DBファイルのパスを取得
@@ -120,20 +126,21 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
     //#endregion DBへstaffを追加
 
-    staffAddDoneParam.is_post = true;
     staffAddDoneParam.is_exception = is_exception;
     staffAddDoneParam.staff_name = staff_name;
     //console.log(staff_add_param);
-  } else {
-    staffAddDoneParam.is_post = false;
-    staffAddDoneParam.is_exception = false;
-    staffAddDoneParam.staff_name = "";
-  }
-  //#endregion POSTメッセージからパラメータを取得する
 
-  return {
-    props: staffAddDoneParam,
-  };
+    return {
+      props: staffAddDoneParam,
+    };
+  } else {
+    if (context.res) {
+      context.res.writeHead(303, { Location: redirect_page });
+      context.res.end();
+    }
+
+    return { props: {} };
+  }
 };
 
 export default StaffSddDone;

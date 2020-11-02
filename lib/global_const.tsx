@@ -4,6 +4,8 @@ export const dbFilePath: string = ".db_work";
 export const dbFileName: string = "MyDb.sqlite";
 
 export const staffNameMaxLegth: number = 14;
+export const productNameMaxLegth: number = 30;
+export const productImageMaxLegth: number = 30;
 
 export const msgElementHttpReqError = (
   <React.Fragment key="http_request_error">

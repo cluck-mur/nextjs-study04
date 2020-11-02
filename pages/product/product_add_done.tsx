@@ -1,6 +1,6 @@
 /***************************************************
  *
- * スタッフ追加 完了 画面
+ * 商品追加 完了 画面
  *
  ***************************************************/
 import React from "react";
@@ -21,20 +21,21 @@ import {
 } from "../../lib/global_const";
 import { CompReferer } from "../../lib/myUtils";
 
-type StaffAddDoneParam = {
+type ProductAddDoneParam = {
   is_exception: boolean;
-  staff_name: string;
+  product_name: string;
+  product_price: number;
 };
 
-const previous_page: string = "/staff/staff_add_check";
-const redirect_page: string = "/staff/staff_add";
-const return_page: string = "/staff/staff_list"
+const previous_page: string = "/product/product_add_check";
+const redirect_page: string = "/product/product_add";
+const return_page: string = "/product/product_list"
 
 /**
- * スタッフ追加 完了
- * @param staffAddDoneParam
+ * 商品追加 完了
+ * @param productAddDoneParam
  */
-const StaffAddDone = (staffAddDoneParam: StaffAddDoneParam) => {
+const ProductAddDone = (productAddDoneParam: ProductAddDoneParam) => {
   const router = useRouter();
 
   const items = [];
@@ -42,23 +43,23 @@ const StaffAddDone = (staffAddDoneParam: StaffAddDoneParam) => {
     <React.Fragment key="head">
       <Head>
         <meta charSet="UTF-8" />
-        <title>ろくまる農園 スタッフ追加 完了</title>
+        <title>ろくまる農園 商品追加 完了</title>
       </Head>
-      <h2>スタッフ追加 完了</h2>
+      <h2>商品追加 完了</h2>
     </React.Fragment>
   );
 
-  if (!staffAddDoneParam.is_exception) {
+  if (!productAddDoneParam.is_exception) {
     items.push(
       <React.Fragment key="success">
-        {staffAddDoneParam.staff_name} さんを追加しました。
+        {productAddDoneParam.product_name} を追加しました。
         <br />
-        <input type="button" onClick={() => {router.push(return_page)}} value="スタッフポータルへ" />
+        <input type="button" onClick={() => {router.push(return_page)}} value="商品管理ポータルへ" />
       </React.Fragment>
     );
   } else {
     //#region エラーメッセージを表示
-    if (staffAddDoneParam.is_exception) {
+    if (productAddDoneParam.is_exception) {
       items.push(msgElementSystemError);
     }
     //#endregion エラーメッセージを表示
@@ -81,9 +82,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   //#endregion refererチェック
 
   if (context.req.method == "POST" && refcomp_result) {
-    let staffAddDoneParam: StaffAddDoneParam = {
+    let productAddDoneParam: ProductAddDoneParam = {
       is_exception: false,
-      staff_name: "",
+      product_name: "",
+      product_price: null,
     };
 
     //#region POSTメッセージからパラメータを取得する
@@ -92,13 +94,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const body_json = formUrlDecoded(body_string);
 
     const name = typeof body_json.name == "undefined" ? "" : body_json.name;
-    const pass = typeof body_json.pass == "undefined" ? "" : body_json.pass;
+    const price = typeof body_json.price == "undefined" ? "" : body_json.price;
 
-    const staff_name = htmlspecialchars(name);
-    const staff_pass = htmlspecialchars(pass);
+    const product_name = htmlspecialchars(name);
+    const product_price = htmlspecialchars(price);
     //#endregion POSTメッセージからパラメータを取得する
 
-    //#region DBへstaffを追加
+    //#region DBへproductを追加
     // DBファイルのパスを取得
     const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
     const filename: string = dbFileName;
@@ -112,7 +114,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         driver: sqlite3.Database,
       });
       //db.serialize();
-      const sql = `INSERT INTO mst_staff(name,password) VALUES ("${staff_name}","${staff_pass}")`;
+      const sql = `INSERT INTO mst_product(name,price) VALUES ("${product_name}",${product_price})`;
       let stmt = await db.prepare(sql);
       try {
         await stmt.run();
@@ -126,14 +128,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     } finally {
       // 処理なし
     }
-    //#endregion DBへstaffを追加
+    //#endregion DBへproductを追加
 
-    staffAddDoneParam.is_exception = is_exception;
-    staffAddDoneParam.staff_name = staff_name;
-    //console.log(staff_add_param);
+    productAddDoneParam.is_exception = is_exception;
+    productAddDoneParam.product_name = product_name;
+    productAddDoneParam.product_price = product_price;
+    //console.log(product_add_param);
 
     return {
-      props: staffAddDoneParam,
+      props: productAddDoneParam,
     };
   } else {
     if (context.res) {
@@ -145,4 +148,4 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 };
 
-export default StaffAddDone;
+export default ProductAddDone;

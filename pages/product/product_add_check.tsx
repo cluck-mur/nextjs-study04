@@ -1,6 +1,6 @@
 /***************************************************
  *
- * スタッフ追加 入力値チェック 画面
+ * 商品追加 入力値チェック 画面
  *
  ***************************************************/
 import React from "react";
@@ -17,26 +17,25 @@ import {
 } from "../../lib/global_const";
 import { CompReferer } from "../../lib/myUtils";
 
-type StaffAddCheckParam = {
+type ProductAddCheckParam = {
+  is_worng_price: boolean;
   is_exception: boolean;
   name: string | undefined;
-  pass: string | undefined;
-  pass2: string | undefined;
+  price: string | undefined;
 };
 
-const next_page: string = "/staff/staff_add_done";
-const previous_page: string = "/staff/staff_add";
-const redirect_page: string = "/staff/staff_add";
+const next_page: string = "/product/product_add_done";
+const previous_page: string = "/product/product_add";
+const redirect_page: string = "/product/product_add";
 
 /**
- * スタッフ追加 入力値チェック
- * @param staffAddCheckParam
+ * 商品追加 入力値チェック
+ * @param productAddCheckParam
  */
-const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
+const StaffAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
   //#region 前画面からデータを受け取る
-  const staff_name = staffAddCheckParam.name;
-  let staff_pass = staffAddCheckParam.pass;
-  const staff_pass2 = staffAddCheckParam.pass2;
+  const product_name = productAddCheckParam.name;
+  let product_price = productAddCheckParam.price;
   //#endregion 前画面からデータを受け取る
 
   const items = [];
@@ -44,46 +43,35 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
     <React.Fragment key="head">
       <Head>
         <meta charSet="UTF-8" />
-        <title>ろくまる農園 スタッフ追加チェック</title>
+        <title>ろくまる農園 商品追加チェック</title>
       </Head>
-      <h2>スタッフ追加 確認</h2>
+      <h2>商品追加 確認</h2>
     </React.Fragment>
   );
 
-  if (!staffAddCheckParam.is_exception) {
+  if (!productAddCheckParam.is_exception) {
     const router = useRouter();
 
     //#region 画面用データを設定
     let name_str: string = "";
-    let pass_display_flg: boolean = false;
-    let pass2_display_flg: boolean = false;
 
-    if (staff_name == "") {
-      // もしスタッフ名が入力されていなかったら "スタッフ名が入力されていません" と表示する
-      name_str = "スタッフ名が入力されていません";
+    if (product_name == "") {
+      // もし商品名が入力されていなかったら "商品名が入力されていません" と表示する
+      name_str = "商品名が入力されていません";
     } else {
-      // もしスタッフ名が入力されていたらスタッフ名を表示する
-      name_str = `スタッフ名：${staff_name}`;
-    }
-
-    if (staff_pass == "") {
-      // もしパスワードが入力されていなかったら "パスワードが入力されていません" と表示する
-      pass_display_flg = true;
-    }
-
-    if (staff_pass != staff_pass2) {
-      // もし１回目のパスワードと2回目のパスワードが一致しなかったら "パスワードが一致しません" と表示する
-      pass2_display_flg = true;
+      // もし商品名が入力されていたら商品名を表示する
+      name_str = `商品名：${product_name}`;
     }
     //#endregion 画面用データを設定
 
     //#region 次画面へ移行できるか判断する
     let can_move_next_page = true;
-    if (staff_name == "" || staff_pass == "" || staff_pass != staff_pass2) {
+    if (
+      product_name == "" ||
+      product_price == "" ||
+      productAddCheckParam.is_worng_price
+    ) {
       can_move_next_page = false;
-    } else {
-      // パスワードをハッシュ化する
-      staff_pass = md5(staff_pass);
     }
     //#endregion 次画面へ移行できるか判断する
 
@@ -93,7 +81,7 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
         {/* もし入力に問題があったら "戻る"ボタンだけを表示する */}
         {can_move_next_page ? (
           <React.Fragment key="success">
-            以下のスタッフを追加します。
+            以下の商品を追加します。
             <br />
             よろしいですか？
             <br />
@@ -102,30 +90,27 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
         ) : (
           <React.Fragment key="success"></React.Fragment>
         )}
-        {/* スタッフ名表示 */}
+        {/* 商品名表示 */}
         <div>{name_str}</div>
-        {/* パスワード未入力警告文表示 */}
-        {pass_display_flg && (
+        {/* 不正価格警告文表示 */}
+        {productAddCheckParam.is_worng_price && (
           <div>
-            パスワードが入力されていません
-            <br />
-          </div>
-        )}
-        {/* パスワード不一致警告文表示 */}
-        {pass2_display_flg && (
-          <div>
-            パスワードが一致しません
+            価格が正しく入力されていません。
             <br />
           </div>
         )}
         {can_move_next_page ? (
-          <form method="post" action={next_page}>
-            <input type="hidden" name="name" value={staff_name} />
-            <input type="hidden" name="pass" value={staff_pass} />
-            <br />
-            <input type="button" onClick={() => router.back()} value="戻る" />
-            <input type="submit" value="OK" />
-          </form>
+          <React.Fragment>
+            <div>価格：{product_price}円</div>
+            <form method="post" action={next_page}>
+              <input type="hidden" name="name" value={product_name} />
+              <input type="hidden" name="price" value={product_price} />
+              {/* <br /> */}
+              {/* <input type="button" onClick={() => router.back()} value="戻る" /> */}
+              <input type="button" onClick={() => history.back()} value="戻る" />
+              <input type="submit" value="OK" />
+            </form>
+          </React.Fragment>
         ) : (
           <form>
             <input type="button" onClick={() => router.back()} value="戻る" />
@@ -135,7 +120,7 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
     );
     //#endregion JSX
   } else {
-    if (staffAddCheckParam.is_exception) {
+    if (productAddCheckParam.is_exception) {
       items.push(msgElementSystemError);
     }
   }
@@ -157,11 +142,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   //#endregion refererチェック
 
   if (context.req.method == "POST" && refcomp_result) {
-    let staffAddCheckParam: StaffAddCheckParam = {
+    let productAddCheckParam: ProductAddCheckParam = {
+      is_worng_price: false,
       is_exception: false,
       name: "",
-      pass: "",
-      pass2: "",
+      price: "",
     };
 
     //#region POSTメッセージからパラメータを取得する
@@ -171,17 +156,21 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     //console.log(body_json)
 
     const name = typeof body_json.name == "undefined" ? "" : body_json.name;
-    const pass = typeof body_json.pass == "undefined" ? "" : body_json.pass;
-    const pass2 = typeof body_json.pass2 == "undefined" ? "" : body_json.pass2;
-    //console.log(staff_add_param);
+    const price = typeof body_json.price == "undefined" ? "" : body_json.price;
+    //console.log(product_add_param);
 
-    staffAddCheckParam.name = htmlspecialchars(name);
-    staffAddCheckParam.pass = htmlspecialchars(pass);
-    staffAddCheckParam.pass2 = htmlspecialchars(pass2);
+    productAddCheckParam.name = htmlspecialchars(name);
+    productAddCheckParam.price = htmlspecialchars(price);
     //#endregion POSTメッセージからパラメータを取得する
 
+    //const match_result = productAddCheckParam.price.match(/^[^0-9]+/);
+    const match_result = productAddCheckParam.price.match(/^[0-9]+$/);
+    //console.log(match_result);
+    if (match_result == null) {
+      productAddCheckParam.is_worng_price = true;
+    }
     return {
-      props: staffAddCheckParam,
+      props: productAddCheckParam,
     };
   } else {
     if (context.res) {

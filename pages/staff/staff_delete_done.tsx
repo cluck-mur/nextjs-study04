@@ -46,13 +46,13 @@ const StaffDeleteDone = (staffDeleteDoneParam: StaffDeleteDoneParam) => {
         <meta charSet="UTF-8" />
         <title>ろくまる農園 スタッフ削除 完了</title>
       </Head>
+      <h2>スタッフ削除 完了</h2>
     </React.Fragment>
   );
 
   if (!staffDeleteDoneParam.is_exception) {
     items.push(
       <React.Fragment>
-        <h2>スタッフ削除 完了</h2>
         {staffDeleteDoneParam.staff_name} さんを削除しました。
         <br />
         <input type="button" onClick={() => {router.push(return_page)}} value="スタッフポータルへ" />

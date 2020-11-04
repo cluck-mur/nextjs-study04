@@ -26,9 +26,9 @@ type ProductEditParam = {
   is_noexist_productcode: boolean;
   is_multipleexist_productcode: boolean;
   is_exception: boolean;
-  product_code: number;
+  product_code: string;
   product_name: string;
-  product_price: number;
+  product_price: string;
   product_image: string;
 };
 
@@ -138,7 +138,7 @@ const ProductEdit = (productEditParam: ProductEditParam) => {
             <br />
             <input
               type="text"
-              name="name"
+              name="price"
               width="200px"
               // maxLength={productNameMaxLegth}
               defaultValue={productEditParam.product_price}
@@ -149,7 +149,7 @@ const ProductEdit = (productEditParam: ProductEditParam) => {
             <br />
             <input
               type="text"
-              name="name"
+              name="image"
               width="200px"
               // maxLength={productNameMaxLegth}
               defaultValue={productEditParam.product_image}
@@ -196,9 +196,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       is_noexist_productcode: false,
       is_multipleexist_productcode: false,
       is_exception: false,
-      product_code: null,
+      product_code: "",
       product_name: "",
-      product_price: null,
+      product_price: "",
       product_image: "",
     };
 
@@ -208,15 +208,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     // const body_string = body.toString();
     // const body_json = formUrlDecoded(body_string);
     //console.log(body_json)
-    const productcode: number =
+    const productcode: string =
       typeof context.query.productcode == "undefined" ||
       context.query.productcode == "null"
-        ? null
-        : parseInt(context.query.productcode.toString());
+        ? ""
+        : htmlspecialchars(context.query.productcode.toString());
     //console.log(product_add_param);
     //#endregion POSTメッセージからパラメータを取得する
 
-    if (productcode != null) {
+    if (productcode != "") {
       productEditParam.product_code = productcode;
 
       //#region DBへproductを追加
@@ -248,7 +248,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
           const product_image =
             product[0].image == "undefined" ? "" : product[0].image;
           productEditParam.product_name = htmlspecialchars(product_name);
-          productEditParam.product_price = product_price;
+          productEditParam.product_price = htmlspecialchars(product_price);
           productEditParam.product_image = htmlspecialchars(product_image);
         } else if (product.length < 1) {
           productEditParam.is_noexist_productcode = true;

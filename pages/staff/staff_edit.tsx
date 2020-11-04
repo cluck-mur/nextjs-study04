@@ -26,7 +26,7 @@ type StaffEditParam = {
   is_noexist_staffcode: boolean;
   is_multipleexist_staffcode: boolean;
   is_exception: boolean;
-  staff_code: number;
+  staff_code: string;
   staff_name: string;
 };
 
@@ -179,7 +179,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       is_noexist_staffcode: false,
       is_multipleexist_staffcode: false,
       is_exception: false,
-      staff_code: null,
+      staff_code: "",
       staff_name: "",
     };
 
@@ -189,15 +189,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     // const body_string = body.toString();
     // const body_json = formUrlDecoded(body_string);
     //console.log(body_json)
-    const staffcode: number =
+    const staffcode: string =
       typeof context.query.staffcode == "undefined" ||
       context.query.staffcode == "null"
-        ? null
-        : parseInt(context.query.staffcode.toString());
+        ? ""
+        : htmlspecialchars(context.query.staffcode.toString());
     //console.log(staff_add_param);
     //#endregion POSTメッセージからパラメータを取得する
 
-    if (staffcode != null) {
+    if (staffcode != "") {
       staffEditParam.staff_code = staffcode;
 
       //#region DBへstaffを追加

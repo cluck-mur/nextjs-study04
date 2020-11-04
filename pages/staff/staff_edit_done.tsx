@@ -23,7 +23,7 @@ import { CompReferer } from "../../lib/myUtils";
 
 type StaffEditDoneParam = {
   is_exception: boolean;
-  staff_code: number;
+  staff_code: string;
   staff_name: string;
 };
 
@@ -86,7 +86,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   if (context.req.method == "POST" && refcomp_result) {
     let staffEditDoneParam: StaffEditDoneParam = {
       is_exception: false,
-      staff_code: null,
+      staff_code: "",
       staff_name: "",
     };
 
@@ -94,12 +94,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const body_string = body.toString();
     const body_json = formUrlDecoded(body_string);
 
-    const code = typeof body_json.code == "undefined" ? null : body_json.code;
+    const code = typeof body_json.code == "undefined" ? "" : body_json.code;
     const name = typeof body_json.name == "undefined" ? "" : body_json.name;
     const pass = typeof body_json.pass == "undefined" ? "" : body_json.pass;
 
     //#region 前画面からデータを受け取る
-    const staff_code = code;
+    const staff_code = htmlspecialchars(code);
     const staff_name = htmlspecialchars(name);
     const staff_pass = htmlspecialchars(pass);
     //#endregion 前画面からデータを受け取る

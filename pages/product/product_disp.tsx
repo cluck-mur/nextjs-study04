@@ -26,9 +26,9 @@ type ProductDispParam = {
   is_noexist_productcode: boolean;
   is_multipleexist_productcode: boolean;
   is_exception: boolean;
-  product_code: number;
+  product_code: string;
   product_name: string;
-  product_price: number;
+  product_price: string;
   product_image: string;
 };
 
@@ -199,15 +199,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     // const body_string = body.toString();
     // const body_json = formUrlDecoded(body_string);
     //console.log(body_json)
-    const productcode: number =
+    const productcode: string =
       typeof context.query.productcode == "undefined" ||
       context.query.productcode == "null"
-        ? null
-        : parseInt(context.query.productcode.toString());
+        ? ""
+        : htmlspecialchars(context.query.productcode.toString());
     //console.log(product_add_param);
     //#endregion POSTメッセージからパラメータを取得する
 
-    if (productcode != null) {
+    if (productcode != "") {
       productDispParam.product_code = productcode;
 
       //#region DBへproductを追加
@@ -226,7 +226,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
         const product: {
           name: string;
-          price: number;
+          price: string;
           image: string;
         }[] = await db.all(
           `SELECT name,price,gazou FROM mst_product WHERE code=${productcode}`
@@ -234,10 +234,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         // console.log(product);
         if (product.length == 1) {
           const product_name = product[0].name == "undefined" ? "" : product[0].name;
-          const product_price = product[0].price;
+          const product_price = product[0].price == "undefined" ? "" : product[0].price;
           const product_image = product[0].image == "undefined" ? "" : product[0].image;
           productDispParam.product_name = htmlspecialchars(product_name);
-          productDispParam.product_price = product_price;
+          productDispParam.product_price = htmlspecialchars(product_price);
           productDispParam.product_image = htmlspecialchars(product_image);
         } else if (product.length < 1) {
           productDispParam.is_noexist_productcode = true;

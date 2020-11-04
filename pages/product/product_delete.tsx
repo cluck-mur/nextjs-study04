@@ -1,6 +1,6 @@
 /***************************************************
  *
- * スタッフ削除画面
+ * 商品削除画面
  *
  ***************************************************/
 import React from "react";
@@ -14,33 +14,33 @@ import htmlspecialchars from "htmlspecialchars";
 import {
   dbFilePath,
   dbFileName,
-  staffNameMaxLegth,
+  productNameMaxLegth,
   msgElementSystemError,
-  msgElementStaffWasNotSelected,
-  msgElementStaffWasNotExisted,
-  msgElementStaffWasMultipleExisted,
+  msgElementProductWasNotSelected,
+  msgElementProductWasNotExisted,
+  msgElementProductWasMultipleExisted,
 } from "../../lib/global_const";
 
-type StaffDeleteParam = {
-  is_null_staffcode: boolean;
-  is_noexist_staffcode: boolean;
-  is_multipleexist_staffcode: boolean;
+type ProductDeleteParam = {
+  is_null_productcode: boolean;
+  is_noexist_productcode: boolean;
+  is_multipleexist_productcode: boolean;
   is_exception: boolean;
-  staff_code: string;
-  staff_name: string;
+  product_code: string;
+  product_name: string;
 };
 
-const next_page: string = "/staff/staff_delete_done";
-const previous_page: string = "/staff/staff_list";
-const redirect_page: string = "/staff/staff_list";
+const next_page: string = "/product/product_delete_done";
+const previous_page: string = "/product/product_list";
+const redirect_page: string = "/product/product_list";
 
 /**
- * スタッフ修正
- * @param staffDeleteParam
+ * 商品修正
+ * @param productDeleteParam
  */
-const StaffEdit = (staffDeleteParam: StaffDeleteParam) => {
+const ProductEdit = (productDeleteParam: ProductDeleteParam) => {
   //#region 前画面からデータを受け取る
-  const staff_name = staffDeleteParam.staff_name;
+  const product_name = productDeleteParam.product_name;
   const router = useRouter();
   //#endregion 前画面からデータを受け取る
 
@@ -49,15 +49,15 @@ const StaffEdit = (staffDeleteParam: StaffDeleteParam) => {
     <React.Fragment>
       <Head>
         <meta charSet="UTF-8" />
-        <title>ろくまる農園 スタッフ削除</title>
+        <title>ろくまる農園 商品削除</title>
       </Head>
-      <h2>スタッフ削除</h2>
+      <h2>商品削除</h2>
     </React.Fragment>
   );
 
-  if (!staffDeleteParam.is_exception) {
-    if (staffDeleteParam.is_null_staffcode) {
-      items.push(msgElementStaffWasNotSelected);
+  if (!productDeleteParam.is_exception) {
+    if (productDeleteParam.is_null_productcode) {
+      items.push(msgElementProductWasNotSelected);
       items.push(
         <React.Fragment>
           <br />
@@ -68,12 +68,12 @@ const StaffEdit = (staffDeleteParam: StaffDeleteParam) => {
           />
         </React.Fragment>
       );
-    } else if (staffDeleteParam.is_noexist_staffcode) {
-      items.push(msgElementStaffWasNotExisted);
+    } else if (productDeleteParam.is_noexist_productcode) {
+      items.push(msgElementProductWasNotExisted);
       items.push(
         <React.Fragment>
           <br />
-          スタッフコード: {staffDeleteParam.staff_code} 
+          商品コード: {productDeleteParam.product_code} 
           <br />
           <input
             type="button"
@@ -82,12 +82,12 @@ const StaffEdit = (staffDeleteParam: StaffDeleteParam) => {
           />
         </React.Fragment>
       );
-    } else if (staffDeleteParam.is_multipleexist_staffcode) {
-      items.push(msgElementStaffWasMultipleExisted)
+    } else if (productDeleteParam.is_multipleexist_productcode) {
+      items.push(msgElementProductWasMultipleExisted)
       items.push(
         <React.Fragment>
           <br />
-          スタッフコード: {staffDeleteParam.staff_code} 
+          商品コード: {productDeleteParam.product_code} 
           <br />
           <input
             type="button"
@@ -99,30 +99,30 @@ const StaffEdit = (staffDeleteParam: StaffDeleteParam) => {
     } else {
       items.push(
         <React.Fragment>
-          ※スタッフを削除します。
+          ※商品を削除します。
           <br />
           <br />
-          {/* スタッフコード
+          {/* 商品コード
         <br />
-        {staffDeleteParam.staff_code}
+        {productDeleteParam.product_code}
         <br /> */}
           <form method="post" action={next_page}>
-            このスタッフを削除してよろしいですか？
+            この商品を削除してよろしいですか？
             <br />
             <br />
-            スタッフコード
+            商品コード
             <br />
-            {/* <input type="hidden" name="code" value={staffDeleteParam.staff_code} /> */}
+            {/* <input type="hidden" name="code" value={productDeleteParam.product_code} /> */}
             <input
               type="text"
               name="code"
               width="200px"
               readOnly
               style={{ background: "#dddddd" }}
-              defaultValue={staffDeleteParam.staff_code}
+              defaultValue={productDeleteParam.product_code}
             />
             <br />
-            スタッフ名
+            商品名
             <br />
             <input
               type="text"
@@ -130,8 +130,8 @@ const StaffEdit = (staffDeleteParam: StaffDeleteParam) => {
               width="200px"
               readOnly
               style={{ background: "#dddddd" }}
-              maxLength={staffNameMaxLegth}
-              defaultValue={staff_name}
+              maxLength={productNameMaxLegth}
+              defaultValue={product_name}
               //onChange={onChangeEvent}
             />
             <br />
@@ -144,7 +144,7 @@ const StaffEdit = (staffDeleteParam: StaffDeleteParam) => {
     }
   } else {
     //#region エラーメッセージを表示
-    if (staffDeleteParam.is_exception) {
+    if (productDeleteParam.is_exception) {
       items.push(msgElementSystemError);
     }
     //#endregion エラーメッセージを表示
@@ -170,13 +170,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   //#endregion refererチェック
 
   if (refcomp_result) {
-    let staffDeleteParam: StaffDeleteParam = {
-      is_null_staffcode: false,
-      is_noexist_staffcode: false,
-      is_multipleexist_staffcode: false,
+    let productDeleteParam: ProductDeleteParam = {
+      is_null_productcode: false,
+      is_noexist_productcode: false,
+      is_multipleexist_productcode: false,
       is_exception: false,
-      staff_code: "",
-      staff_name: "",
+      product_code: "",
+      product_name: "",
     };
 
     //#region POSTメッセージからパラメータを取得する
@@ -185,18 +185,18 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     // const body_string = body.toString();
     // const body_json = formUrlDecoded(body_string);
     //console.log(body_json)
-    const staffcode: string =
-      typeof context.query.staffcode == "undefined" ||
-      context.query.staffcode == "null"
+    const productcode: string =
+      typeof context.query.productcode == "undefined" ||
+      context.query.productcode == "null"
         ? ""
-        : htmlspecialchars(context.query.staffcode.toString());
-    //console.log(staff_add_param);
+        : htmlspecialchars(context.query.productcode.toString());
+    //console.log(product_add_param);
     //#endregion POSTメッセージからパラメータを取得する
 
-    if (staffcode != "") {
-      staffDeleteParam.staff_code = staffcode;
+    if (productcode != "") {
+      productDeleteParam.product_code = productcode;
 
-      //#region DBへstaffを追加
+      //#region DBへproductを追加
       // DBファイルのパスを取得
       const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
       const filename: string = dbFileName;
@@ -210,29 +210,29 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         });
         //db.serialize();
 
-        const staff: { name: string }[] = await db.all(
-          `SELECT name FROM mst_staff WHERE code=${staffcode}`
+        const product: { name: string }[] = await db.all(
+          `SELECT name FROM mst_product WHERE code=${productcode}`
         );
-        // console.log(staff);
-        if (staff.length == 1) {
-          const staff_name = staff[0].name;
-          staffDeleteParam.staff_name = htmlspecialchars(staff_name);
-        } else if (staff.length < 1) {
-          staffDeleteParam.is_noexist_staffcode = true;
+        // console.log(product);
+        if (product.length == 1) {
+          const product_name = product[0].name;
+          productDeleteParam.product_name = htmlspecialchars(product_name);
+        } else if (product.length < 1) {
+          productDeleteParam.is_noexist_productcode = true;
         } else {
-          staffDeleteParam.is_multipleexist_staffcode = true;
+          productDeleteParam.is_multipleexist_productcode = true;
         }
       } catch (e) {
         is_exception = true;
       } finally {
-        staffDeleteParam.is_exception = is_exception;
+        productDeleteParam.is_exception = is_exception;
       }
     } else {
-      staffDeleteParam.is_null_staffcode = true;
+      productDeleteParam.is_null_productcode = true;
     }
-    //#endregion DBへstaffを追加
+    //#endregion DBへproductを追加
     return {
-      props: staffDeleteParam,
+      props: productDeleteParam,
     };
   } else {
     if (context.res) {
@@ -244,4 +244,4 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 };
 
-export default StaffEdit;
+export default ProductEdit;

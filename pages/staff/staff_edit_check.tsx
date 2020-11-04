@@ -19,7 +19,7 @@ import { CompReferer } from "../../lib/myUtils";
 
 type StaffEditCheckParam = {
   is_exception: boolean;
-  code: number | undefined;
+  code: string | undefined;
   name: string | undefined;
   pass: string | undefined;
   pass2: string | undefined;
@@ -172,7 +172,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   if (context.req.method == "POST" && refcomp_result) {
     let staffEditCheckParam: StaffEditCheckParam = {
       is_exception: false,
-      code: null,
+      code: "",
       name: "",
       pass: "",
       pass2: "",
@@ -183,12 +183,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const body_string = body.toString();
     const body_json = formUrlDecoded(body_string);
     //console.log(body_json)
-    const code = typeof body_json.name == "undefined" ? null : body_json.code;
+    const code = typeof body_json.code == "undefined" ? "" : body_json.code;
     const name = typeof body_json.name == "undefined" ? "" : body_json.name;
     const pass = typeof body_json.pass == "undefined" ? "" : body_json.pass;
     const pass2 = typeof body_json.pass2 == "undefined" ? "" : body_json.pass2;
     //console.log(staff_add_param);
-    staffEditCheckParam.code = code;
+    staffEditCheckParam.code = htmlspecialchars(code);
     staffEditCheckParam.name = htmlspecialchars(name);
     staffEditCheckParam.pass = htmlspecialchars(pass);
     staffEditCheckParam.pass2 = htmlspecialchars(pass2);

@@ -1,6 +1,6 @@
 /***************************************************
  *
- * 商品追加 入力値チェック 画面
+ * 商品修正 入力値チェック 画面
  *
  ***************************************************/
 import React from "react";
@@ -17,25 +17,29 @@ import {
 } from "../../lib/global_const";
 import { CompReferer } from "../../lib/myUtils";
 
-type ProductAddCheckParam = {
+type ProductEditCheckParam = {
   is_worng_price: boolean;
   is_exception: boolean;
+  code: string | undefined;
   name: string | undefined;
   price: string | undefined;
+  image: string | undefined;
 };
 
-const next_page: string = "/product/product_add_done";
-const previous_page: string = "/product/product_add";
-const redirect_page: string = "/product/product_add";
+const next_page: string = "/product/product_edit_done";
+const previous_page: string = "/product/product_edit";
+const redirect_page: string = "/product/product_edit";
 
 /**
- * 商品追加 入力値チェック
- * @param productAddCheckParam
+ * 商品修正 入力値チェック
+ * @param productEditCheckParam
  */
-const ProductAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
+const ProductEditCheck = (productEditCheckParam: ProductEditCheckParam) => {
   //#region 前画面からデータを受け取る
-  const product_name = productAddCheckParam.name;
-  let product_price = productAddCheckParam.price;
+  const product_code = productEditCheckParam.code;
+  const product_name = productEditCheckParam.name;
+  let product_price = productEditCheckParam.price;
+  const product_image = productEditCheckParam.image;
   //#endregion 前画面からデータを受け取る
 
   const items = [];
@@ -43,13 +47,13 @@ const ProductAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
     <React.Fragment key="head">
       <Head>
         <meta charSet="UTF-8" />
-        <title>ろくまる農園 商品追加チェック</title>
+        <title>ろくまる農園 商品修正チェック</title>
       </Head>
-      <h2>商品追加 確認</h2>
+      <h2>商品修正 確認</h2>
     </React.Fragment>
   );
 
-  if (!productAddCheckParam.is_exception) {
+  if (!productEditCheckParam.is_exception) {
     const router = useRouter();
 
     //#region 画面用データを設定
@@ -69,7 +73,7 @@ const ProductAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
     if (
       product_name == "" ||
       product_price == "" ||
-      productAddCheckParam.is_worng_price
+      productEditCheckParam.is_worng_price
     ) {
       can_move_next_page = false;
     }
@@ -81,7 +85,7 @@ const ProductAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
         {/* もし入力に問題があったら "戻る"ボタンだけを表示する */}
         {can_move_next_page ? (
           <React.Fragment key="success">
-            以下の商品を追加します。
+            以下の商品を修正します。
             <br />
             よろしいですか？
             <br />
@@ -93,7 +97,7 @@ const ProductAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
         {/* 商品名表示 */}
         <div>{name_str}</div>
         {/* 不正価格警告文表示 */}
-        {productAddCheckParam.is_worng_price && (
+        {productEditCheckParam.is_worng_price && (
           <div>
             価格が正しく入力されていません。
             <br />
@@ -102,9 +106,12 @@ const ProductAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
         {can_move_next_page ? (
           <React.Fragment>
             <div>価格：{product_price}円</div>
+            <div>画像：{product_image}</div>
             <form method="post" action={next_page}>
+              <input type="hidden" name="code" value={product_code} />
               <input type="hidden" name="name" value={product_name} />
               <input type="hidden" name="price" value={product_price} />
+              <input type="hidden" name="image" value={product_image} />
               {/* <br /> */}
               {/* <input type="button" onClick={() => router.back()} value="戻る" /> */}
               <input type="button" onClick={() => history.back()} value="戻る" />
@@ -120,7 +127,7 @@ const ProductAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
     );
     //#endregion JSX
   } else {
-    if (productAddCheckParam.is_exception) {
+    if (productEditCheckParam.is_exception) {
       items.push(msgElementSystemError);
     }
   }
@@ -142,11 +149,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   //#endregion refererチェック
 
   if (context.req.method == "POST" && refcomp_result) {
-    let productAddCheckParam: ProductAddCheckParam = {
+    let productEditCheckParam: ProductEditCheckParam = {
       is_worng_price: false,
       is_exception: false,
+      code: "",
       name: "",
       price: "",
+      image: "",
     };
 
     //#region POSTメッセージからパラメータを取得する
@@ -155,22 +164,26 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const body_json = formUrlDecoded(body_string);
     //console.log(body_json)
 
+    const code = typeof body_json.code == "undefined" ? "" : body_json.code;
     const name = typeof body_json.name == "undefined" ? "" : body_json.name;
     const price = typeof body_json.price == "undefined" ? "" : body_json.price;
-    //console.log(product_add_param);
+    const image = typeof body_json.image == "undefined" ? "" : body_json.price;
+    //console.log(product_edit_param);
 
-    productAddCheckParam.name = htmlspecialchars(name);
-    productAddCheckParam.price = htmlspecialchars(price);
+    productEditCheckParam.code = htmlspecialchars(code);
+    productEditCheckParam.name = htmlspecialchars(name);
+    productEditCheckParam.price = htmlspecialchars(price);
+    productEditCheckParam.image = htmlspecialchars(image);
     //#endregion POSTメッセージからパラメータを取得する
 
-    //const match_result = productAddCheckParam.price.match(/^[^0-9]+/);
-    const match_result = productAddCheckParam.price.match(/^[0-9]+$/);
+    //const match_result = productEditCheckParam.price.match(/^[^0-9]+/);
+    const match_result = productEditCheckParam.price.match(/^[0-9]+$/);
     //console.log(match_result);
     if (match_result == null) {
-      productAddCheckParam.is_worng_price = true;
+      productEditCheckParam.is_worng_price = true;
     }
     return {
-      props: productAddCheckParam,
+      props: productEditCheckParam,
     };
   } else {
     if (context.res) {
@@ -182,4 +195,4 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 };
 
-export default ProductAddCheck;
+export default ProductEditCheck;

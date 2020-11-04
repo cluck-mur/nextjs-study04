@@ -1,6 +1,6 @@
 /***************************************************
  *
- * スタッフ削除 完了 画面
+ * 商品削除 完了 画面
  *
  ***************************************************/
 import React from "react";
@@ -21,22 +21,22 @@ import {
 } from "../../lib/global_const";
 import { CompReferer } from "../../lib/myUtils";
 
-type StaffDeleteDoneParam = {
+type ProductDeleteDoneParam = {
   is_exception: boolean;
-  staff_code: string;
-  staff_name: string;
+  product_code: string;
+  product_name: string;
 };
 
-//const next_page: string = "/staff/staff_edit_check";
-const previous_page: string = "/staff/staff_delete";
-const redirect_page: string = "/staff/staff_list";
-const return_page: string = "/staff/staff_list"
+//const next_page: string = "/product/product_edit_check";
+const previous_page: string = "/product/product_delete";
+const redirect_page: string = "/product/product_list";
+const return_page: string = "/product/product_list"
 
 /**
- * スタッフ削除 完了
- * @param staffDeleteDoneParam
+ * 商品削除 完了
+ * @param productDeleteDoneParam
  */
-const StaffDeleteDone = (staffDeleteDoneParam: StaffDeleteDoneParam) => {
+const ProductDeleteDone = (productDeleteDoneParam: ProductDeleteDoneParam) => {
   const router = useRouter();
 
   const items = [];
@@ -44,23 +44,23 @@ const StaffDeleteDone = (staffDeleteDoneParam: StaffDeleteDoneParam) => {
     <React.Fragment>
       <Head>
         <meta charSet="UTF-8" />
-        <title>ろくまる農園 スタッフ削除 完了</title>
+        <title>ろくまる農園 商品削除 完了</title>
       </Head>
-      <h2>スタッフ削除 完了</h2>
+      <h2>商品削除 完了</h2>
     </React.Fragment>
   );
 
-  if (!staffDeleteDoneParam.is_exception) {
+  if (!productDeleteDoneParam.is_exception) {
     items.push(
       <React.Fragment>
-        {staffDeleteDoneParam.staff_name} さんを削除しました。
+        {productDeleteDoneParam.product_name} を削除しました。
         <br />
-        <input type="button" onClick={() => {router.push(return_page)}} value="スタッフポータルへ" />
+        <input type="button" onClick={() => {router.push(return_page)}} value="商品ポータルへ" />
       </React.Fragment>
     );
   } else {
     //#region エラーメッセージを表示
-    if (staffDeleteDoneParam.is_exception) {
+    if (productDeleteDoneParam.is_exception) {
       items.push(msgElementSystemError);
     }
     //#endregion エラーメッセージを表示
@@ -84,10 +84,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   //#region POSTメッセージからパラメータを取得する
   if (context.req.method == "POST" && refcomp_result) {
-    let staffDeleteDoneParam: StaffDeleteDoneParam = {
+    let productDeleteDoneParam: ProductDeleteDoneParam = {
       is_exception: false,
-      staff_code: "",
-      staff_name: "",
+      product_code: "",
+      product_name: "",
     };
 
     const body = await getRawBody(context.req);
@@ -98,11 +98,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const name = typeof body_json.name == "undefined" ? "" : body_json.name;
 
     //#region 前画面からデータを受け取る
-    const staff_code = htmlspecialchars(code);
-    const staff_name = htmlspecialchars(name);
+    const product_code = htmlspecialchars(code);
+    const product_name = htmlspecialchars(name);
     //#endregion 前画面からデータを受け取る
 
-    //#region DBへstaffを追加
+    //#region DBへproductを追加
     // DBファイルのパスを取得
     const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
     const filename: string = dbFileName;
@@ -116,7 +116,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         driver: sqlite3.Database,
       });
       //db.serialize();
-      const sql = `DELETE FROM mst_staff WHERE code=${staff_code}`;
+      const sql = `DELETE FROM mst_product WHERE code=${product_code}`;
       let stmt = await db.prepare(sql);
       try {
         await stmt.run();
@@ -130,15 +130,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     } finally {
       // 処理なし
     }
-    //#endregion DBへstaffを追加
+    //#endregion DBへproductを追加
 
-    staffDeleteDoneParam.is_exception = is_exception;
-    staffDeleteDoneParam.staff_code = staff_code;
-    staffDeleteDoneParam.staff_name = staff_name;
-    //console.log(staff_add_param);
+    productDeleteDoneParam.is_exception = is_exception;
+    productDeleteDoneParam.product_code = product_code;
+    productDeleteDoneParam.product_name = product_name;
+    //console.log(product_add_param);
 
     return {
-      props: staffDeleteDoneParam,
+      props: productDeleteDoneParam,
     };
   } else {
     if (context.res) {
@@ -151,4 +151,4 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   //#endregion POSTメッセージからパラメータを取得する
 };
 
-export default StaffDeleteDone;
+export default ProductDeleteDone;

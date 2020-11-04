@@ -24,7 +24,8 @@ import { CompReferer } from "../../lib/myUtils";
 type ProductAddDoneParam = {
   is_exception: boolean;
   product_name: string;
-  product_price: number;
+  product_price: string;
+  product_image: string;
 };
 
 const previous_page: string = "/product/product_add_check";
@@ -85,7 +86,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     let productAddDoneParam: ProductAddDoneParam = {
       is_exception: false,
       product_name: "",
-      product_price: null,
+      product_price: "",
+      product_image: "",
     };
 
     //#region POSTメッセージからパラメータを取得する

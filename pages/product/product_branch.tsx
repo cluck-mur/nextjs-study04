@@ -1,6 +1,6 @@
 /***************************************************
  *
- * スタッフ管理 分岐画面
+ * 商品管理 分岐画面
  *
  ***************************************************/
 import React from "react";
@@ -21,24 +21,24 @@ import {
 } from "../../lib/global_const";
 import { CompReferer } from "../../lib/myUtils";
 
-type StaffBranchParam = {
+type ProductBranchParam = {
   is_exception: boolean;
-  staff_code: number;
-  staff_name: string;
+  product_code: number;
+  product_name: string;
 };
 
-const next_page_add: string = "/staff/staff_add";
-const next_page_edit: string = "/staff/staff_edit";
-const next_page_delete: string = "/staff/staff_delete";
-const next_page_disp: string = "/staff/staff_disp";
-const previous_page: string = "/staff/staff_list";
-const redirect_page: string = "/staff/staff_list";
+const next_page_add: string = "/product/product_add";
+const next_page_edit: string = "/product/product_edit";
+const next_page_delete: string = "/product/product_delete";
+const next_page_disp: string = "/product/product_disp";
+const previous_page: string = "/product/product_list";
+const redirect_page: string = "/product/product_list";
 
 /**
- * スタッフ修正 入力値チェック
- * @param staffBranchkParam
+ * 商品修正 入力値チェック
+ * @param productBranchkParam
  */
-const StaffBranch = (staffBranchParam: StaffBranchParam) => {
+const StaffBranch = (productBranchParam: ProductBranchParam) => {
   return <React.Fragment></React.Fragment>;
 };
 
@@ -61,7 +61,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const body_json = formUrlDecoded(body_string);
     //console.log(body_json);
 
-    const staffcode = typeof body_json.staffcode == "undefined" ? null : body_json.staffcode;
+    const productcode = typeof body_json.productcode == "undefined" ? null : body_json.productcode;
 
     //#region ページ分岐
     if (body_json.add != undefined) {
@@ -72,19 +72,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
     if (body_json.disp != undefined) {
       if (context.res) {
-        context.res.writeHead(303, { Location: next_page_disp + `?staffcode=${staffcode}` });
+        context.res.writeHead(303, { Location: next_page_disp + `?productcode=${productcode}` });
         context.res.end();
       }
     }
     if (body_json.edit != undefined) {
       if (context.res) {
-        context.res.writeHead(303, { Location: next_page_edit + `?staffcode=${staffcode}` });
+        context.res.writeHead(303, { Location: next_page_edit + `?productcode=${productcode}` });
         context.res.end();
       }
     }
     if (body_json.delete != undefined) {
       if (context.res) {
-        context.res.writeHead(303, { Location: next_page_delete + `?staffcode=${staffcode}` });
+        context.res.writeHead(303, { Location: next_page_delete + `?productcode=${productcode}` });
         context.res.end();
       }
     }

@@ -1,6 +1,6 @@
 /***************************************************
  *
- * スタッフ ポータル画面
+ * 商品 ポータル画面
  *
  ***************************************************/
 import React from "react";
@@ -16,29 +16,30 @@ import {
   msgElementSystemError,
 } from "../../lib/global_const";
 
-type StaffListParam = {
+type ProductListParam = {
   is_exception: boolean;
-  staffs: {
-    name: string;
+  products: {
     code: number;
+    name: string;
+    price: number;
   }[];
 };
 
-const next_page: string = "/staff/staff_branch";
-// const previous_page: string = "/staff/staff_list";
-// const redirect_page: string = "/staff/staff_list";
+const next_page: string = "/product/product_branch";
+// const previous_page: string = "/product/product_list";
+// const redirect_page: string = "/product/product_list";
 
 /**
  * スタッフ選択フォームを生成
- * @param staffListParam
+ * @param ProductListParam
  */
-const GenSelectStaffFormChildren = (staffListParam: StaffListParam) => {
+const GenSelectProductFormChildren = (ProductListParam: ProductListParam) => {
   const items = [];
-  staffListParam.staffs.map((staff) => {
+  ProductListParam.products.map((product) => {
     items.push(
-      <React.Fragment key={staff.code.toString()} >
-        <input type="radio" name="staffcode" value={staff.code} />
-        {staff.code}: {staff.name}
+      <React.Fragment key={product.code.toString()} >
+        <input type="radio" name="productcode" value={product.code} />
+        {product.code}: {product.name} ({product.price}円)
         <br />
       </React.Fragment>
     );
@@ -47,31 +48,31 @@ const GenSelectStaffFormChildren = (staffListParam: StaffListParam) => {
 };
 
 /**
- * スタッフ ポータル
- * @param staffListParam
+ * 商品 ポータル
+ * @param ProductListParam
  */
-const StaffList = (staffListParam: StaffListParam) => {
+const ProductList = (productListParam: ProductListParam) => {
   const items = [];
   items.push(
     <React.Fragment>
       <Head>
         <meta charSet="UTF-8" />
-        <title>ろくまる農園 スタッフ管理 ポータル</title>
+        <title>ろくまる農園 商品管理 ポータル</title>
       </Head>
     </React.Fragment>
   );
 
-  if (!staffListParam.is_exception) {
+  if (!productListParam.is_exception) {
     items.push(
       <React.Fragment>
-        <h2>スタッフ管理 ポータル</h2>
+        <h2>商品管理 ポータル</h2>
         <br />
         {/* 分岐画面へ移行する */}
         {/*
-        <form method="post" action="staff_branch">
+        <form method="post" action="product_branch">
         */}
         <form method="post" action={next_page}>
-          新たにスタッフを登録する場合にはこちら
+          新たに商品を登録する場合にはこちら
           <br />
           <input
             key="add"
@@ -83,12 +84,12 @@ const StaffList = (staffListParam: StaffListParam) => {
           <br />
           <br />
           <br />
-          登録済みスタッフについての操作はこちら
+          登録済み商品についての操作はこちら
           <br />
-          ※スタッフを選択し、操作したいボタンを押してください。
+          ※商品を選択し、操作したいボタンを押してください。
           <br />
           <br />
-          {GenSelectStaffFormChildren(staffListParam)}
+          {GenSelectProductFormChildren(productListParam)}
           <input key="disp" type="submit" name="disp" value="参照" />
           <input key="edit" type="submit" name="edit" value="修正" />
           <input key="delete" type="submit" name="delete" value="削除" />
@@ -109,16 +110,16 @@ const StaffList = (staffListParam: StaffListParam) => {
  * @param context
  */
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  //#region DBへstaffを追加
+  //#region DBへproductを追加
   // DBファイルのパスを取得
   const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
   const filename: string = dbFileName;
   const fullPath: string = path.join(dbWorkDirectory, filename);
 
   let is_exception = false;
-  let staffListParam: StaffListParam = {
+  let productListParam: ProductListParam = {
     is_exception: is_exception,
-    staffs: Array(),
+    products: Array(),
   };
   try {
     // DBオープン
@@ -128,21 +129,21 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     });
     //db.serialize();
 
-    const staffs = await db.all("SELECT code,name FROM mst_staff WHERE 1");
-    staffs.map((staff) => {
-      staffListParam.staffs.push(staff);
+    const products = await db.all("SELECT code,name,price FROM mst_product WHERE 1");
+    products.map((product) => {
+      productListParam.products.push(product);
     });
-    //console.log(staffListParam);
+    //console.log(ProductListParam);
   } catch (e) {
     is_exception = true;
   } finally {
-    staffListParam.is_exception = is_exception;
+    productListParam.is_exception = is_exception;
   }
-  //#endregion DBへstaffを追加
+  //#endregion DBへproductを追加
 
   return {
-    props: staffListParam,
+    props: productListParam,
   };
 };
 
-export default StaffList;
+export default ProductList;

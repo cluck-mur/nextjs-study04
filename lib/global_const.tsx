@@ -39,3 +39,21 @@ export const msgElementStaffWasMultipleExisted = (
   </React.Fragment>
 );
 
+export const msgElementProductWasNotSelected = (
+  <React.Fragment>
+    商品が選択されていません。
+  </React.Fragment>
+);
+
+export const msgElementProductWasNotExisted = (
+  <React.Fragment>
+    指定された商品は存在しません。
+  </React.Fragment>
+);
+
+export const msgElementProductWasMultipleExisted = (
+  <React.Fragment>
+    指定された商品が複数存在します。
+  </React.Fragment>
+);
+

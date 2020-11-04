@@ -27,7 +27,8 @@ const ProductAdd = ({}) => {
       ※商品を新たに登録します。
       <br />
       <br />
-      <form method="post" action="product_add_check">
+      <form method="post" action="product_add_check" encType="multipart/from-data">
+      {/* <form method="post" action="/product/product_image_upload.html" encType="multipart/from-data"> */}
         商品名を入力してください。
         <br />
         <input
@@ -46,6 +47,10 @@ const ProductAdd = ({}) => {
           width="50px"
           onInput={(e: React.ChangeEvent<HTMLInputElement>) => { e.target.value = e.target.value.replace(/[^0-9]+/i, '') }}
         />円
+        <br />
+        画像を選んでください。
+        <br />
+        <input type="file" name="image" width="400px" />
         <br />
         <input type="button" onClick={() => router.back()} value="戻る" />
         <input type="submit" value="OK" />

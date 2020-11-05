@@ -76,7 +76,7 @@
 　　URL: https://qiita.com/uhyo/items/adf6cb83333a25097f25
 
 ◆ 参考15（サイト）
-　　JavaScriptにおけるるーぷについて
+　　JavaScriptにおけるループについて
 　　TITLE: JavaScript で forEach を使うのは最終手段
 　　URL: https://qiita.com/diescake/items/70d9b0cbd4e3d5cc6fce
 
@@ -88,3 +88,20 @@
 ◆ 参考17（サイト）
 　　TITLE: セキュア･プログラミング講座 by IPA
 　　URL: https://www.ipa.go.jp/security/awareness/vendor/programming/index.html
+
+◆ 参考18（サイト）
+　　技術要素: セッション, session, 認証
+　　TITLE: Amplify JavaScript が Next.js や Nuxt.js などのフレームワークのサーバー側レンダリング (SSR) サポートを追加
+　　URL: https://aws.amazon.com/jp/about-aws/whats-new/2020/09/amplify-javascript-adds-server-side-rendering-support-frameworks-next-js-nuxt-js/
+
+◆ 参考19（サイト）
+　　技術要素: セッション, session, 認証
+　　TITLE: next-iron-session
+　　URL: https://www.npmjs.com/package/next-iron-session
+　　
+　　TITLE: next-iron-session GitHub
+　　URL: https://github.com/vvo/next-iron-session/tree/master/examples/next.js
+
+　　TITLE: next-iron-session デモ
+　　URL: https://next-iron-session.now.sh/
+

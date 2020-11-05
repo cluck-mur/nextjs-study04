@@ -14,6 +14,7 @@ import { open } from "sqlite";
 import path from "path";
 import htmlspecialchars from "htmlspecialchars";
 import md5 from "md5";
+import withSession from "../../lib/session";
 import {
   dbFilePath,
   dbFileName,
@@ -24,6 +25,7 @@ import {
   msgElementStaffWasMultipleExisted,
 } from "../../lib/global_const";
 import { CompReferer } from "../../lib/myUtils";
+import { Session } from "inspector";
 
 type StaffLoginCheckParam = {
   is_exception: boolean;
@@ -127,97 +129,106 @@ const StaffLoginCheck = (staffLoginCheckParam: StaffLoginCheckParam) => {
  * SSR
  * @param context
  */
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  let staffLoginCheckParam: StaffLoginCheckParam = {
-    is_exception: false,
-    is_noexist_staffcode: false,
-    is_multipleexist_staffcode: false,
-    code: "",
-    name: "",
-    pass: "",
-  };
-
-  //#region refererチェック
-  const refcomp_result = CompReferer(
-    context.req.headers.referer,
-    context.req.headers.host,
-    previous_page
-  );
-  //#endregion refererチェック
-
-  if (context.req.method == "POST" && refcomp_result) {
-    //#region POSTメッセージからパラメータを取得する
-    const body = await getRawBody(context.req);
-    const body_string = body.toString();
-    const body_json = formUrlDecoded(body_string);
-    //console.log(body_json)
-
-    const code = typeof body_json.code == "undefined" ? "" : body_json.code;
-    const pass = typeof body_json.pass == "undefined" ? "" : body_json.pass;
-    //console.log(staff_add_param);
-
-    staffLoginCheckParam.code = htmlspecialchars(code);
-    staffLoginCheckParam.pass = htmlspecialchars(pass);
-    //#endregion POSTメッセージからパラメータを取得する
-
-    if (staffLoginCheckParam.code != "" && staffLoginCheckParam.pass != "") {
-      // パスワードをハッシュ化
-      staffLoginCheckParam.pass = md5(staffLoginCheckParam.pass);
-
-      // DBファイルのパスを取得
-      const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
-      const filename: string = dbFileName;
-      const fullPath: string = path.join(dbWorkDirectory, filename);
-      let is_exception: boolean = false;
-      try {
-        // DBオープン
-        const db = await open({
-          filename: fullPath,
-          driver: sqlite3.Database,
-        });
-        //db.serialize();
-
-        const staff: { name: string }[] = await db.all(
-          `SELECT name FROM mst_staff WHERE code=${staffLoginCheckParam.code} AND password="${staffLoginCheckParam.pass}"`
-        );
-        // console.log(staff);
-        if (staff.length == 1) {
-          const staff_name = staff[0].name;
-          staffLoginCheckParam.name = htmlspecialchars(staff_name);
-        } else if (staff.length < 1) {
-          staffLoginCheckParam.is_noexist_staffcode = true;
-        } else {
-          staffLoginCheckParam.is_multipleexist_staffcode = true;
-        }
-      } catch (e) {
-        is_exception = true;
-      } finally {
-        staffLoginCheckParam.is_exception = is_exception;
-      }
-
-      if (
-        !staffLoginCheckParam.is_exception &&
-        !staffLoginCheckParam.is_noexist_staffcode &&
-        !staffLoginCheckParam.is_multipleexist_staffcode
-      ) {
-        if (context.res) {
-          context.res.writeHead(303, { Location: next_page });
-          context.res.end();
-        }
-      }
-    }
-
-    return {
-      props: staffLoginCheckParam,
+export const getServerSideProps: GetServerSideProps = withSession(
+  async ({ req, res }) => {
+    // export const getServerSideProps: GetServerSideProps = async ({req, res}) => {
+    let staffLoginCheckParam: StaffLoginCheckParam = {
+      is_exception: false,
+      is_noexist_staffcode: false,
+      is_multipleexist_staffcode: false,
+      code: "",
+      name: "",
+      pass: "",
     };
-  } else {
-    if (context.res) {
-      context.res.writeHead(303, { Location: redirect_page });
-      context.res.end();
-    }
 
-    return { props: {} };
+    //#region refererチェック
+    const refcomp_result = CompReferer(
+      req.headers.referer,
+      req.headers.host,
+      previous_page
+    );
+    //#endregion refererチェック
+
+    if (req.method == "POST" && refcomp_result) {
+      //#region POSTメッセージからパラメータを取得する
+      const body = await getRawBody(req);
+      const body_string = body.toString();
+      const body_json = formUrlDecoded(body_string);
+      //console.log(body_json)
+
+      const code = typeof body_json.code == "undefined" ? "" : body_json.code;
+      const pass = typeof body_json.pass == "undefined" ? "" : body_json.pass;
+      //console.log(staff_add_param);
+
+      staffLoginCheckParam.code = htmlspecialchars(code);
+      staffLoginCheckParam.pass = htmlspecialchars(pass);
+      //#endregion POSTメッセージからパラメータを取得する
+
+      if (staffLoginCheckParam.code != "" && staffLoginCheckParam.pass != "") {
+        // パスワードをハッシュ化
+        staffLoginCheckParam.pass = md5(staffLoginCheckParam.pass);
+
+        // DBファイルのパスを取得
+        const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
+        const filename: string = dbFileName;
+        const fullPath: string = path.join(dbWorkDirectory, filename);
+        let is_exception: boolean = false;
+        try {
+          // DBオープン
+          const db = await open({
+            filename: fullPath,
+            driver: sqlite3.Database,
+          });
+          //db.serialize();
+
+          const staff: { name: string }[] = await db.all(
+            `SELECT name FROM mst_staff WHERE code=${staffLoginCheckParam.code} AND password="${staffLoginCheckParam.pass}"`
+          );
+          // console.log(staff);
+          if (staff.length == 1) {
+            const staff_name = staff[0].name;
+            staffLoginCheckParam.name = htmlspecialchars(staff_name);
+          } else if (staff.length < 1) {
+            staffLoginCheckParam.is_noexist_staffcode = true;
+          } else {
+            staffLoginCheckParam.is_multipleexist_staffcode = true;
+          }
+        } catch (e) {
+          is_exception = true;
+        } finally {
+          staffLoginCheckParam.is_exception = is_exception;
+        }
+
+        if (
+          !staffLoginCheckParam.is_exception &&
+          !staffLoginCheckParam.is_noexist_staffcode &&
+          !staffLoginCheckParam.is_multipleexist_staffcode
+        ) {
+          // ログイン成功したら
+          req.session.set("login", 1);
+          req.session.set("staff_code", staffLoginCheckParam.code);
+          req.session.set("staff_name", staffLoginCheckParam.name);
+          await req.session.save();
+
+          if (res) {
+            res.writeHead(303, { Location: next_page });
+            res.end();
+          }
+        }
+      }
+
+      return {
+        props: staffLoginCheckParam,
+      };
+    } else {
+      if (res) {
+        res.writeHead(303, { Location: redirect_page });
+        res.end();
+      }
+
+      return { props: {} };
+    }
   }
-};
+);
 
 export default StaffLoginCheck;

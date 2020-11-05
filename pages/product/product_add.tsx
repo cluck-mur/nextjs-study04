@@ -27,8 +27,8 @@ const ProductAdd = ({}) => {
       ※商品を新たに登録します。
       <br />
       <br />
-      <form method="post" action="product_add_check" encType="multipart/from-data">
-      {/* <form method="post" action="/product/product_image_upload.html" encType="multipart/from-data"> */}
+      {/* <form method="post" action="product_add_check" encType="multipart/form-data"> */}
+      <form method="post" action="product_add_check">
         商品名を入力してください。
         <br />
         <input

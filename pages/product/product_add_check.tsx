@@ -152,6 +152,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     //#region POSTメッセージからパラメータを取得する
     const body = await getRawBody(context.req);
     const body_string = body.toString();
+    console.log(body_string);
     const body_json = formUrlDecoded(body_string);
     //console.log(body_json)
 

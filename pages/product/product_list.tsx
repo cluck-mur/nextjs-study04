@@ -6,6 +6,7 @@
 import React from "react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
+import Link from "next/link";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import path from "path";
@@ -57,7 +58,7 @@ const ProductList = (productListParam: ProductListParam) => {
     <React.Fragment>
       <Head>
         <meta charSet="UTF-8" />
-        <title>ろくまる農園 商品管理 ポータル</title>
+        <title>ろくまる農園 商品管理メニュー</title>
       </Head>
     </React.Fragment>
   );
@@ -65,14 +66,14 @@ const ProductList = (productListParam: ProductListParam) => {
   if (!productListParam.is_exception) {
     items.push(
       <React.Fragment>
-        <h2>商品管理 ポータル</h2>
+        <h2>商品管理 メニュー</h2>
         <br />
         {/* 分岐画面へ移行する */}
         {/*
         <form method="post" action="product_branch">
         */}
         <form method="post" action={next_page}>
-          新たに商品を登録する場合にはこちら
+          <b>新規商品 追加</b>
           <br />
           <input
             key="add"
@@ -84,7 +85,7 @@ const ProductList = (productListParam: ProductListParam) => {
           <br />
           <br />
           <br />
-          登録済み商品についての操作はこちら
+          <b>既存商品 参照・修正・削除</b>
           <br />
           ※商品を選択し、操作したいボタンを押してください。
           <br />
@@ -94,6 +95,8 @@ const ProductList = (productListParam: ProductListParam) => {
           <input key="edit" type="submit" name="edit" value="修正" />
           <input key="delete" type="submit" name="delete" value="削除" />
         </form>
+        <br />
+        <Link href="/staff_login/staff_top"><a>ショップ管理トップメニューへ</a></Link>
       </React.Fragment>
     );
   } else {

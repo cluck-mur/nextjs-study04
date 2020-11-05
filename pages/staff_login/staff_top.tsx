@@ -1,40 +1,31 @@
 /***************************************************
  *
- * スタッフログイン 画面
+ * スタッフ管理トップ 画面
  *
  ***************************************************/
 import React from "react";
 import { GetStaticProps } from "next";
 import Head from "next/head";
+import Link from "next/link";
 
-const StaffLogin = ({}) => {
+const StaffTop = ({}) => {
   const items = [];
   items.push(
     <React.Fragment key="head">
       <Head>
         <meta charSet="UTF-8" />
-        <title>ろくまる農園 スタッフログイン</title>
+        <title>ろくまる農園 ショップ管理トップ</title>
       </Head>
+      <h2>ショップ管理 トップメニュー</h2>
     </React.Fragment>
   );
 
   items.push(
     <React.Fragment key="main">
-      スタッフログイン
+      <Link href="/staff/staff_list"><a>スタッフ管理</a></Link>
       <br />
       <br />
-      <form method="post" action="staff_login_check">
-        スタッフコード
-        <br />
-        <input type="text" name="code" />
-        <br />
-        パスワード
-        <br />
-        <input type="password" name="pass" />
-        <br />
-        <br />
-        <input type="submit" value="ログイン" />
-      </form>
+      <Link href="/product/product_list"><a>商品管理</a></Link>
     </React.Fragment>
   );
 
@@ -47,4 +38,4 @@ export const getStaticProps: GetStaticProps = async () => {
   };
 };
 
-export default StaffLogin;
+export default StaffTop;

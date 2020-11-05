@@ -52,6 +52,7 @@ const ProductAdd = ({}) => {
         <br />
         <input type="file" name="image" width="400px" />
         <br />
+        <br />
         <input type="button" onClick={() => router.back()} value="戻る" />
         <input type="submit" value="OK" />
       </form>

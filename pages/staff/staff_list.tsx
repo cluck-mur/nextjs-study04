@@ -1,11 +1,12 @@
 /***************************************************
  *
- * スタッフ ポータル画面
+ * スタッフ管理 メニュー画面
  *
  ***************************************************/
 import React from "react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
+import Link from "next/link";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import path from "path";
@@ -56,7 +57,7 @@ const StaffList = (staffListParam: StaffListParam) => {
     <React.Fragment>
       <Head>
         <meta charSet="UTF-8" />
-        <title>ろくまる農園 スタッフ管理 ポータル</title>
+        <title>ろくまる農園 スタッフ管理メニュー</title>
       </Head>
     </React.Fragment>
   );
@@ -64,15 +65,15 @@ const StaffList = (staffListParam: StaffListParam) => {
   if (!staffListParam.is_exception) {
     items.push(
       <React.Fragment>
-        <h2>スタッフ管理 ポータル</h2>
+        <h2>スタッフ管理 メニュー</h2>
         <br />
         {/* 分岐画面へ移行する */}
         {/*
         <form method="post" action="staff_branch">
         */}
         <form method="post" action={next_page}>
-          新たにスタッフを登録する場合にはこちら
-          <br />
+          <b>新規スタッフ 追加</b>
+          <br/>
           <input
             key="add"
             type="submit"
@@ -83,7 +84,7 @@ const StaffList = (staffListParam: StaffListParam) => {
           <br />
           <br />
           <br />
-          登録済みスタッフについての操作はこちら
+          <b>既存スタッフ 参照・修正・削除</b>
           <br />
           ※スタッフを選択し、操作したいボタンを押してください。
           <br />
@@ -93,6 +94,8 @@ const StaffList = (staffListParam: StaffListParam) => {
           <input key="edit" type="submit" name="edit" value="修正" />
           <input key="delete" type="submit" name="delete" value="削除" />
         </form>
+        <br />
+        <Link href="/staff_login/staff_top"><a>ショップ管理トップメニューへ</a></Link>
       </React.Fragment>
     );
   } else {

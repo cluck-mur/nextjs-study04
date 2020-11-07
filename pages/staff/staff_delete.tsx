@@ -20,8 +20,13 @@ import {
   msgElementStaffWasNotExisted,
   msgElementStaffWasMultipleExisted,
 } from "../../lib/global_const";
+import withSession from "../../lib/session";
+import { msgYouHaveNotLogin } from "../../lib/global_const";
 
 type StaffDeleteParam = {
+  login: string;
+  login_staff_code: string;
+  login_staff_name: string;
   is_null_staffcode: boolean;
   is_noexist_staffcode: boolean;
   is_multipleexist_staffcode: boolean;
@@ -51,103 +56,118 @@ const StaffEdit = (staffDeleteParam: StaffDeleteParam) => {
         <meta charSet="UTF-8" />
         <title>ろくまる農園 スタッフ削除</title>
       </Head>
+      {
+        /* ログインしていたら */
+        staffDeleteParam.login != void 0 && (
+          <React.Fragment>
+            {staffDeleteParam.login_staff_name}さん ログイン中
+            <br />
+          </React.Fragment>
+        )
+      }
       <h2>スタッフ削除</h2>
     </React.Fragment>
   );
 
-  if (!staffDeleteParam.is_exception) {
-    if (staffDeleteParam.is_null_staffcode) {
-      items.push(msgElementStaffWasNotSelected);
-      items.push(
-        <React.Fragment>
-          <br />
-          <input
-            type="button"
-            onClick={() => router.push(redirect_page)}
-            value="戻る"
-          />
-        </React.Fragment>
-      );
-    } else if (staffDeleteParam.is_noexist_staffcode) {
-      items.push(msgElementStaffWasNotExisted);
-      items.push(
-        <React.Fragment>
-          <br />
-          スタッフコード: {staffDeleteParam.staff_code} 
-          <br />
-          <input
-            type="button"
-            onClick={() => router.push(redirect_page)}
-            value="戻る"
-          />
-        </React.Fragment>
-      );
-    } else if (staffDeleteParam.is_multipleexist_staffcode) {
-      items.push(msgElementStaffWasMultipleExisted)
-      items.push(
-        <React.Fragment>
-          <br />
-          スタッフコード: {staffDeleteParam.staff_code} 
-          <br />
-          <input
-            type="button"
-            onClick={() => router.push(redirect_page)}
-            value="戻る"
-          />
-        </React.Fragment>
-      );
-    } else {
-      items.push(
-        <React.Fragment>
-          ※スタッフを削除します。
-          <br />
-          <br />
-          {/* スタッフコード
+  if (staffDeleteParam.login == void 0) {
+    // ログインしていなかったら
+    // 未ログインメッセージを表示
+    items.push(msgYouHaveNotLogin);
+  } else {
+    if (!staffDeleteParam.is_exception) {
+      if (staffDeleteParam.is_null_staffcode) {
+        items.push(msgElementStaffWasNotSelected);
+        items.push(
+          <React.Fragment>
+            <br />
+            <input
+              type="button"
+              onClick={() => router.push(redirect_page)}
+              value="戻る"
+            />
+          </React.Fragment>
+        );
+      } else if (staffDeleteParam.is_noexist_staffcode) {
+        items.push(msgElementStaffWasNotExisted);
+        items.push(
+          <React.Fragment>
+            <br />
+            スタッフコード: {staffDeleteParam.staff_code}
+            <br />
+            <input
+              type="button"
+              onClick={() => router.push(redirect_page)}
+              value="戻る"
+            />
+          </React.Fragment>
+        );
+      } else if (staffDeleteParam.is_multipleexist_staffcode) {
+        items.push(msgElementStaffWasMultipleExisted);
+        items.push(
+          <React.Fragment>
+            <br />
+            スタッフコード: {staffDeleteParam.staff_code}
+            <br />
+            <input
+              type="button"
+              onClick={() => router.push(redirect_page)}
+              value="戻る"
+            />
+          </React.Fragment>
+        );
+      } else {
+        items.push(
+          <React.Fragment>
+            ※スタッフを削除します。
+            <br />
+            <br />
+            {/* スタッフコード
         <br />
         {staffDeleteParam.staff_code}
         <br /> */}
-          <form method="post" action={next_page}>
-            このスタッフを削除してよろしいですか？
-            <br />
-            <br />
-            スタッフコード
-            <br />
-            {/* <input type="hidden" name="code" value={staffDeleteParam.staff_code} /> */}
-            <input
-              type="text"
-              name="code"
-              width="200px"
-              readOnly
-              style={{ background: "#dddddd" }}
-              defaultValue={staffDeleteParam.staff_code}
-            />
-            <br />
-            スタッフ名
-            <br />
-            <input
-              type="text"
-              name="name"
-              width="200px"
-              readOnly
-              style={{ background: "#dddddd" }}
-              maxLength={staffNameMaxLegth}
-              defaultValue={staff_name}
-              //onChange={onChangeEvent}
-            />
-            <br />
-            <br />
-            <input type="button" onClick={() => router.back()} value="戻る" />
-            <input type="submit" value="OK" />
-          </form>
-        </React.Fragment>
-      );
+            <form method="post" action={next_page}>
+              このスタッフを削除してよろしいですか？
+              <br />
+              <br />
+              スタッフコード
+              <br />
+              {/* <input type="hidden" name="code" value={staffDeleteParam.staff_code} /> */}
+              <input
+                type="text"
+                name="code"
+                width="200px"
+                readOnly
+                style={{ background: "#dddddd" }}
+                defaultValue={staffDeleteParam.staff_code}
+              />
+              <br />
+              スタッフ名
+              <br />
+              <input
+                type="text"
+                name="name"
+                width="200px"
+                readOnly
+                style={{ background: "#dddddd" }}
+                maxLength={staffNameMaxLegth}
+                defaultValue={staff_name}
+                //onChange={onChangeEvent}
+              />
+              <br />
+              <br />
+              <input type="button" onClick={() => router.back()} value="戻る" />
+              <input type="submit" value="OK" />
+            </form>
+          </React.Fragment>
+        );
+      }
+    } else {
+      //#region エラーメッセージを表示
+      if (staffDeleteParam.is_exception) {
+        items.push(msgElementSystemError);
+      }
+      //#endregion エラーメッセージを表示
     }
-  } else {
-    //#region エラーメッセージを表示
-    if (staffDeleteParam.is_exception) {
-      items.push(msgElementSystemError);
-    }
-    //#endregion エラーメッセージを表示
   }
 
   return <React.Fragment>{items}</React.Fragment>;
@@ -157,20 +177,20 @@ const StaffEdit = (staffDeleteParam: StaffDeleteParam) => {
  * SSR
  * @param context
  */
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  //#region refererチェック
-  /*
-  const refcomp_result = CompReferer(
-    context.req.headers.referer,
-    context.req.headers.host,
-    previous_page
-  );
-  */
-  const refcomp_result = true;
-  //#endregion refererチェック
-
-  if (refcomp_result) {
+export const getServerSideProps: GetServerSideProps = withSession(
+  async (context) => {
+    //#region refererチェック
+    // const refcomp_result = CompReferer(
+    //   context.req.headers.referer,
+    //   context.req.headers.host,
+    //   previous_page
+    // );
+    const refcomp_result = true;
+    //#endregion refererチェック
     let staffDeleteParam: StaffDeleteParam = {
+      login: null,
+      login_staff_code: "",
+      login_staff_name: "",
       is_null_staffcode: false,
       is_noexist_staffcode: false,
       is_multipleexist_staffcode: false,
@@ -179,69 +199,86 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       staff_name: "",
     };
 
-    //#region POSTメッセージからパラメータを取得する
-    //console.log(context.query);
-    // const body = await getRawBody(context.req);
-    // const body_string = body.toString();
-    // const body_json = formUrlDecoded(body_string);
-    //console.log(body_json)
-    const staffcode: string =
-      typeof context.query.staffcode == "undefined" ||
-      context.query.staffcode == "null"
-        ? ""
-        : htmlspecialchars(context.query.staffcode.toString());
-    //console.log(staff_add_param);
-    //#endregion POSTメッセージからパラメータを取得する
+    const req = context.req;
+    const res = context.res;
 
-    if (staffcode != "") {
-      staffDeleteParam.staff_code = staffcode;
-
-      //#region DBへstaffを追加
-      // DBファイルのパスを取得
-      const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
-      const filename: string = dbFileName;
-      const fullPath: string = path.join(dbWorkDirectory, filename);
-      let is_exception: boolean = false;
-      try {
-        // DBオープン
-        const db = await open({
-          filename: fullPath,
-          driver: sqlite3.Database,
-        });
-        //db.serialize();
-
-        const staff: { name: string }[] = await db.all(
-          `SELECT name FROM mst_staff WHERE code=${staffcode}`
-        );
-        // console.log(staff);
-        if (staff.length == 1) {
-          const staff_name = staff[0].name;
-          staffDeleteParam.staff_name = htmlspecialchars(staff_name);
-        } else if (staff.length < 1) {
-          staffDeleteParam.is_noexist_staffcode = true;
-        } else {
-          staffDeleteParam.is_multipleexist_staffcode = true;
-        }
-      } catch (e) {
-        is_exception = true;
-      } finally {
-        staffDeleteParam.is_exception = is_exception;
+    if (refcomp_result) {
+      // ログインチェック
+      const login = req.session.get("login");
+      if (login != void 0) {
+        // ログイン済みだったら
+        staffDeleteParam.login = login;
+        staffDeleteParam.login_staff_code = req.session.get("staff_code");
+        staffDeleteParam.login_staff_name = req.session.get("staff_name");
+      } else {
+        // 未ログインだったら
+        return { props: staffDeleteParam };
       }
-    } else {
-      staffDeleteParam.is_null_staffcode = true;
-    }
-    //#endregion DBへstaffを追加
-    return {
-      props: staffDeleteParam,
-    };
-  } else {
-    if (context.res) {
-      context.res.writeHead(303, { Location: redirect_page });
-      context.res.end();
-    }
 
-    return { props: {} };
+      //#region POSTメッセージからパラメータを取得する
+      //console.log(context.query);
+      // const body = await getRawBody(context.req);
+      // const body_string = body.toString();
+      // const body_json = formUrlDecoded(body_string);
+      //console.log(body_json)
+      const staffcode: string =
+        typeof context.query.staffcode == "undefined" ||
+        context.query.staffcode == "null"
+          ? ""
+          : htmlspecialchars(context.query.staffcode.toString());
+      //console.log(staff_add_param);
+      //#endregion POSTメッセージからパラメータを取得する
+
+      if (staffcode != "") {
+        staffDeleteParam.staff_code = staffcode;
+
+        //#region DBへstaffを追加
+        // DBファイルのパスを取得
+        const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
+        const filename: string = dbFileName;
+        const fullPath: string = path.join(dbWorkDirectory, filename);
+        let is_exception: boolean = false;
+        try {
+          // DBオープン
+          const db = await open({
+            filename: fullPath,
+            driver: sqlite3.Database,
+          });
+          //db.serialize();
+
+          const staff: { name: string }[] = await db.all(
+            `SELECT name FROM mst_staff WHERE code=${staffcode}`
+          );
+          // console.log(staff);
+          if (staff.length == 1) {
+            const staff_name = staff[0].name;
+            staffDeleteParam.staff_name = htmlspecialchars(staff_name);
+          } else if (staff.length < 1) {
+            staffDeleteParam.is_noexist_staffcode = true;
+          } else {
+            staffDeleteParam.is_multipleexist_staffcode = true;
+          }
+        } catch (e) {
+          is_exception = true;
+        } finally {
+          staffDeleteParam.is_exception = is_exception;
+        }
+      } else {
+        staffDeleteParam.is_null_staffcode = true;
+      }
+      //#endregion DBへstaffを追加
+      return {
+        props: staffDeleteParam,
+      };
+    } else {
+      if (context.res) {
+        context.res.writeHead(303, { Location: redirect_page });
+        context.res.end();
+      }
+
+      return { props: {} };
+    }
   }
-};
+);
 
 export default StaffEdit;

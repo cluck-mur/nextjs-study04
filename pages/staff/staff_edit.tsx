@@ -20,8 +20,13 @@ import {
   msgElementStaffWasNotExisted,
   msgElementStaffWasMultipleExisted,
 } from "../../lib/global_const";
+import withSession from "../../lib/session";
+import { msgYouHaveNotLogin } from "../../lib/global_const";
 
 type StaffEditParam = {
+  login: string;
+  login_staff_code: string;
+  login_staff_name: string;
   is_null_staffcode: boolean;
   is_noexist_staffcode: boolean;
   is_multipleexist_staffcode: boolean;
@@ -51,107 +56,123 @@ const StaffEdit = (staffEditParam: StaffEditParam) => {
         <meta charSet="UTF-8" />
         <title>ろくまる農園 スタッフ修正</title>
       </Head>
+      {
+        /* ログインしていたら */
+        staffEditParam.login != void 0 && (
+          <React.Fragment>
+            {staffEditParam.login_staff_name}さん ログイン中
+            <br />
+          </React.Fragment>
+        )
+      }
       <h2>スタッフ修正</h2>
     </React.Fragment>
   );
 
-  if (!staffEditParam.is_exception) {
-    if (staffEditParam.is_null_staffcode) {
-      items.push(msgElementStaffWasNotSelected);
-      items.push(
-        <React.Fragment>
+  if (staffEditParam.login == void 0) {
+    // ログインしていなかったら
+    // 未ログインメッセージを表示
+    items.push(msgYouHaveNotLogin);
+  } else {
+    // ログインしていたら
+    if (!staffEditParam.is_exception) {
+      if (staffEditParam.is_null_staffcode) {
+        items.push(msgElementStaffWasNotSelected);
+        items.push(
+          <React.Fragment>
+            <br />
+            <input
+              type="button"
+              onClick={() => router.push(redirect_page)}
+              value="戻る"
+            />
+          </React.Fragment>
+        );
+      } else if (staffEditParam.is_noexist_staffcode) {
+        items.push(msgElementStaffWasNotExisted);
+        items.push(
+          <React.Fragment>
+            <br />
+          スタッフコード: {staffEditParam.staff_code}
+            <br />
+            <input
+              type="button"
+              onClick={() => router.push(redirect_page)}
+              value="戻る"
+            />
+          </React.Fragment>
+        );
+      } else if (staffEditParam.is_multipleexist_staffcode) {
+        items.push(msgElementStaffWasMultipleExisted);
+        items.push(
+          <React.Fragment>
+            <br />
+          スタッフコード: {staffEditParam.staff_code}
+            <br />
+            <input
+              type="button"
+              onClick={() => router.push(redirect_page)}
+              value="戻る"
+            />
+          </React.Fragment>
+        );
+      } else {
+        items.push(
+          <React.Fragment>
+            ※スタッフの名前とパスワードを変更します。
           <br />
-          <input
-            type="button"
-            onClick={() => router.push(redirect_page)}
-            value="戻る"
-          />
-        </React.Fragment>
-      );
-    } else if (staffEditParam.is_noexist_staffcode) {
-      items.push(msgElementStaffWasNotExisted);
-      items.push(
-        <React.Fragment>
-          <br />
-          スタッフコード: {staffEditParam.staff_code} 
-          <br />
-          <input
-            type="button"
-            onClick={() => router.push(redirect_page)}
-            value="戻る"
-          />
-        </React.Fragment>
-      );
-    } else if (staffEditParam.is_multipleexist_staffcode) {
-      items.push(msgElementStaffWasMultipleExisted)
-      items.push(
-        <React.Fragment>
-          <br />
-          スタッフコード: {staffEditParam.staff_code} 
-          <br />
-          <input
-            type="button"
-            onClick={() => router.push(redirect_page)}
-            value="戻る"
-          />
-        </React.Fragment>
-      );
-    } else {
-      items.push(
-        <React.Fragment>
-          ※スタッフの名前とパスワードを変更します。
-          <br />
-          <br />
-          {/* スタッフコード
+            <br />
+            {/* スタッフコード
         <br />
         {staffEditParam.staff_code}
         <br /> */}
-          <form method="post" action={next_page}>
-            スタッフコード
+            <form method="post" action={next_page}>
+              スタッフコード
             <br />
-            {/* <input type="hidden" name="code" value={staffEditParam.staff_code} /> */}
-            <input
-              type="text"
-              name="code"
-              width="200px"
-              readOnly
-              style={{ background: "#dddddd" }}
-              defaultValue={staffEditParam.staff_code}
-            />
-            <br />
+              {/* <input type="hidden" name="code" value={staffEditParam.staff_code} /> */}
+              <input
+                type="text"
+                name="code"
+                width="200px"
+                readOnly
+                style={{ background: "#dddddd" }}
+                defaultValue={staffEditParam.staff_code}
+              />
+              <br />
             スタッフ名
             <br />
-            <input
-              type="text"
-              name="name"
-              width="200px"
-              maxLength={staffNameMaxLegth}
-              defaultValue={staff_name}
+              <input
+                type="text"
+                name="name"
+                width="200px"
+                maxLength={staffNameMaxLegth}
+                defaultValue={staff_name}
               //onChange={onChangeEvent}
-            />{" "}
+              />{" "}
             最大14文字
             <br />
             パスワードを入力してください。
             <br />
-            <input type="password" name="pass" width="100px" />
-            <br />
+              <input type="password" name="pass" width="100px" />
+              <br />
             パスワードをもう一度入力してください。
             <br />
-            <input type="password" name="pass2" width="100px" />
-            <br />
-            <br />
-            <input type="button" onClick={() => router.back()} value="戻る" />
-            <input type="submit" value="OK" />
-          </form>
-        </React.Fragment>
-      );
+              <input type="password" name="pass2" width="100px" />
+              <br />
+              <br />
+              <input type="button" onClick={() => router.back()} value="戻る" />
+              <input type="submit" value="OK" />
+            </form>
+          </React.Fragment>
+        );
+      }
+    } else {
+      //#region エラーメッセージを表示
+      if (staffEditParam.is_exception) {
+        items.push(msgElementSystemError);
+      }
+      //#endregion エラーメッセージを表示
     }
-  } else {
-    //#region エラーメッセージを表示
-    if (staffEditParam.is_exception) {
-      items.push(msgElementSystemError);
-    }
-    //#endregion エラーメッセージを表示
   }
 
   return <React.Fragment>{items}</React.Fragment>;
@@ -161,21 +182,24 @@ const StaffEdit = (staffEditParam: StaffEditParam) => {
  * SSR
  * @param context
  */
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  //#region refererチェック
-  /*
+export const getServerSideProps: GetServerSideProps = withSession(
+  async (context) => {
+    //#region refererチェック
+    /*
   const refcomp_result = CompReferer(
     context.req.headers.referer,
     context.req.headers.host,
     previous_page
   );
   */
-  const refcomp_result = true;
-  //#endregion refererチェック
+    const refcomp_result = true;
+    //#endregion refererチェック
 
-  if (refcomp_result) {
     let staffEditParam: StaffEditParam = {
-      is_null_staffcode: false,
+      login: null,
+      login_staff_code: "",
+      login_staff_name: "",
+        is_null_staffcode: false,
       is_noexist_staffcode: false,
       is_multipleexist_staffcode: false,
       is_exception: false,
@@ -183,69 +207,86 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       staff_name: "",
     };
 
-    //#region POSTメッセージからパラメータを取得する
-    //console.log(context.query);
-    // const body = await getRawBody(context.req);
-    // const body_string = body.toString();
-    // const body_json = formUrlDecoded(body_string);
-    //console.log(body_json)
-    const staffcode: string =
-      typeof context.query.staffcode == "undefined" ||
-      context.query.staffcode == "null"
-        ? ""
-        : htmlspecialchars(context.query.staffcode.toString());
-    //console.log(staff_add_param);
-    //#endregion POSTメッセージからパラメータを取得する
+    const req = context.req;
+    const res = context.res;
 
-    if (staffcode != "") {
-      staffEditParam.staff_code = staffcode;
-
-      //#region DBへstaffを追加
-      // DBファイルのパスを取得
-      const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
-      const filename: string = dbFileName;
-      const fullPath: string = path.join(dbWorkDirectory, filename);
-      let is_exception: boolean = false;
-      try {
-        // DBオープン
-        const db = await open({
-          filename: fullPath,
-          driver: sqlite3.Database,
-        });
-        //db.serialize();
-
-        const staff: { name: string }[] = await db.all(
-          `SELECT name FROM mst_staff WHERE code=${staffcode}`
-        );
-        // console.log(staff);
-        if (staff.length == 1) {
-          const staff_name = staff[0].name;
-          staffEditParam.staff_name = htmlspecialchars(staff_name);
-        } else if (staff.length < 1) {
-          staffEditParam.is_noexist_staffcode = true;
-        } else {
-          staffEditParam.is_multipleexist_staffcode = true;
-        }
-      } catch (e) {
-        is_exception = true;
-      } finally {
-        staffEditParam.is_exception = is_exception;
+    if (refcomp_result) {
+      // ログインチェック
+      const login = req.session.get("login");
+      if (login != void 0) {
+        // ログイン済みだったら
+        staffEditParam.login = login;
+        staffEditParam.login_staff_code = req.session.get("staff_code");
+        staffEditParam.login_staff_name = req.session.get("staff_name");
+      } else {
+        // 未ログインだったら
+        return { props: staffEditParam };
       }
-    } else {
-      staffEditParam.is_null_staffcode = true;
-    }
-    //#endregion DBへstaffを追加
-    return {
-      props: staffEditParam,
-    };
-  } else {
-    if (context.res) {
-      context.res.writeHead(303, { Location: redirect_page });
-      context.res.end();
-    }
 
-    return { props: {} };
+      //#region POSTメッセージからパラメータを取得する
+      //console.log(context.query);
+      // const body = await getRawBody(context.req);
+      // const body_string = body.toString();
+      // const body_json = formUrlDecoded(body_string);
+      //console.log(body_json)
+      const staffcode: string =
+        typeof context.query.staffcode == "undefined" ||
+        context.query.staffcode == "null"
+          ? ""
+          : htmlspecialchars(context.query.staffcode.toString());
+      //console.log(staff_add_param);
+      //#endregion POSTメッセージからパラメータを取得する
+
+      if (staffcode != "") {
+        staffEditParam.staff_code = staffcode;
+
+        //#region DBへstaffを追加
+        // DBファイルのパスを取得
+        const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
+        const filename: string = dbFileName;
+        const fullPath: string = path.join(dbWorkDirectory, filename);
+        let is_exception: boolean = false;
+        try {
+          // DBオープン
+          const db = await open({
+            filename: fullPath,
+            driver: sqlite3.Database,
+          });
+          //db.serialize();
+
+          const staff: { name: string }[] = await db.all(
+            `SELECT name FROM mst_staff WHERE code=${staffcode}`
+          );
+          // console.log(staff);
+          if (staff.length == 1) {
+            const staff_name = staff[0].name;
+            staffEditParam.staff_name = htmlspecialchars(staff_name);
+          } else if (staff.length < 1) {
+            staffEditParam.is_noexist_staffcode = true;
+          } else {
+            staffEditParam.is_multipleexist_staffcode = true;
+          }
+        } catch (e) {
+          is_exception = true;
+        } finally {
+          staffEditParam.is_exception = is_exception;
+        }
+      } else {
+        staffEditParam.is_null_staffcode = true;
+      }
+      //#endregion DBへstaffを追加
+      return {
+        props: staffEditParam,
+      };
+    } else {
+      if (context.res) {
+        context.res.writeHead(303, { Location: redirect_page });
+        context.res.end();
+      }
+
+      return { props: {} };
+    }
   }
-};
+);
 
 export default StaffEdit;

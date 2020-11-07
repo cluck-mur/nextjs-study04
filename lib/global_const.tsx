@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 export const dbFilePath: string = ".db_work";
 export const dbFileName: string = "MyDb.sqlite";
@@ -22,38 +23,35 @@ export const msgElementSystemError = (
 );
 
 export const msgElementStaffWasNotSelected = (
-  <React.Fragment>
-    スタッフが選択されていません。
-  </React.Fragment>
+  <React.Fragment>スタッフが選択されていません。</React.Fragment>
 );
 
 export const msgElementStaffWasNotExisted = (
-  <React.Fragment>
-    指定されたスタッフは存在しません。
-  </React.Fragment>
+  <React.Fragment>指定されたスタッフは存在しません。</React.Fragment>
 );
 
 export const msgElementStaffWasMultipleExisted = (
-  <React.Fragment>
-    指定されたスタッフが複数存在します。
-  </React.Fragment>
+  <React.Fragment>指定されたスタッフが複数存在します。</React.Fragment>
 );
 
 export const msgElementProductWasNotSelected = (
-  <React.Fragment>
-    商品が選択されていません。
-  </React.Fragment>
+  <React.Fragment>商品が選択されていません。</React.Fragment>
 );
 
 export const msgElementProductWasNotExisted = (
-  <React.Fragment>
-    指定された商品は存在しません。
-  </React.Fragment>
+  <React.Fragment>指定された商品は存在しません。</React.Fragment>
 );
 
 export const msgElementProductWasMultipleExisted = (
-  <React.Fragment>
-    指定された商品が複数存在します。
-  </React.Fragment>
+  <React.Fragment>指定された商品が複数存在します。</React.Fragment>
 );
 
+export const msgYouHaveNotLogin = (
+  <React.Fragment key="have_not_login">
+    ログインしていません。
+    <br />
+    <Link href="/staff_login/staff_login">
+      <a>ログイン画面へ</a>
+    </Link>
+  </React.Fragment>
+);

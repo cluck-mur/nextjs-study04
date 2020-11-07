@@ -16,8 +16,13 @@ import {
   msgElementSystemError,
 } from "../../lib/global_const";
 import { CompReferer } from "../../lib/myUtils";
+import withSession from "../../lib/session";
+import { msgYouHaveNotLogin } from "../../lib/global_const";
 
 type ProductAddCheckParam = {
+  login: string;
+  login_staff_code: string;
+  login_staff_name: string;
   is_worng_price: boolean;
   is_exception: boolean;
   name: string | undefined;
@@ -45,83 +50,102 @@ const ProductAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
         <meta charSet="UTF-8" />
         <title>ろくまる農園 商品追加チェック</title>
       </Head>
+      {
+        /* ログインしていたら */
+        productAddCheckParam.login != void 0 && (
+          <React.Fragment>
+            {productAddCheckParam.login_staff_name}さん ログイン中
+            <br />
+          </React.Fragment>
+        )
+      }
       <h2>商品追加 確認</h2>
     </React.Fragment>
   );
 
-  if (!productAddCheckParam.is_exception) {
-    const router = useRouter();
-
-    //#region 画面用データを設定
-    let name_str: string = "";
-
-    if (product_name == "") {
-      // もし商品名が入力されていなかったら "商品名が入力されていません" と表示する
-      name_str = "商品名が入力されていません";
-    } else {
-      // もし商品名が入力されていたら商品名を表示する
-      name_str = `商品名：${product_name}`;
-    }
-    //#endregion 画面用データを設定
-
-    //#region 次画面へ移行できるか判断する
-    let can_move_next_page = true;
-    if (
-      product_name == "" ||
-      product_price == "" ||
-      productAddCheckParam.is_worng_price
-    ) {
-      can_move_next_page = false;
-    }
-    //#endregion 次画面へ移行できるか判断する
-
-    //#region JSX
-    items.push(
-      <React.Fragment key="main">
-        {/* もし入力に問題があったら "戻る"ボタンだけを表示する */}
-        {can_move_next_page ? (
-          <React.Fragment key="success">
-            以下の商品を追加します。
-            <br />
-            よろしいですか？
-            <br />
-            <br />
-          </React.Fragment>
-        ) : (
-          <React.Fragment key="success"></React.Fragment>
-        )}
-        {/* 商品名表示 */}
-        <div>{name_str}</div>
-        {/* 不正価格警告文表示 */}
-        {productAddCheckParam.is_worng_price && (
-          <div>
-            価格が正しく入力されていません。
-            <br />
-          </div>
-        )}
-        {can_move_next_page ? (
-          <React.Fragment>
-            <div>価格：{product_price}円</div>
-            <form method="post" action={next_page}>
-              <input type="hidden" name="name" value={product_name} />
-              <input type="hidden" name="price" value={product_price} />
-              {/* <br /> */}
-              {/* <input type="button" onClick={() => router.back()} value="戻る" /> */}
-              <input type="button" onClick={() => history.back()} value="戻る" />
-              <input type="submit" value="OK" />
-            </form>
-          </React.Fragment>
-        ) : (
-          <form>
-            <input type="button" onClick={() => router.back()} value="戻る" />
-          </form>
-        )}
-      </React.Fragment>
-    );
-    //#endregion JSX
+  if (productAddCheckParam.login == void 0) {
+    // ログインしていなかったら
+    // 未ログインメッセージを表示
+    items.push(msgYouHaveNotLogin);
   } else {
-    if (productAddCheckParam.is_exception) {
-      items.push(msgElementSystemError);
+    if (!productAddCheckParam.is_exception) {
+      const router = useRouter();
+
+      //#region 画面用データを設定
+      let name_str: string = "";
+
+      if (product_name == "") {
+        // もし商品名が入力されていなかったら "商品名が入力されていません" と表示する
+        name_str = "商品名が入力されていません";
+      } else {
+        // もし商品名が入力されていたら商品名を表示する
+        name_str = `商品名：${product_name}`;
+      }
+      //#endregion 画面用データを設定
+
+      //#region 次画面へ移行できるか判断する
+      let can_move_next_page = true;
+      if (
+        product_name == "" ||
+        product_price == "" ||
+        productAddCheckParam.is_worng_price
+      ) {
+        can_move_next_page = false;
+      }
+      //#endregion 次画面へ移行できるか判断する
+
+      //#region JSX
+      items.push(
+        <React.Fragment key="main">
+          {/* もし入力に問題があったら "戻る"ボタンだけを表示する */}
+          {can_move_next_page ? (
+            <React.Fragment key="success">
+              以下の商品を追加します。
+              <br />
+              よろしいですか？
+              <br />
+              <br />
+            </React.Fragment>
+          ) : (
+            <React.Fragment key="success"></React.Fragment>
+          )}
+          {/* 商品名表示 */}
+          <div>{name_str}</div>
+          {/* 不正価格警告文表示 */}
+          {productAddCheckParam.is_worng_price && (
+            <div>
+              価格が正しく入力されていません。
+              <br />
+            </div>
+          )}
+          {can_move_next_page ? (
+            <React.Fragment>
+              <div>価格：{product_price}円</div>
+              <form method="post" action={next_page}>
+                <input type="hidden" name="name" value={product_name} />
+                <input type="hidden" name="price" value={product_price} />
+                {/* <br /> */}
+                {/* <input type="button" onClick={() => router.back()} value="戻る" /> */}
+                <input
+                  type="button"
+                  onClick={() => history.back()}
+                  value="戻る"
+                />
+                <input type="submit" value="OK" />
+              </form>
+            </React.Fragment>
+          ) : (
+            <form>
+              <input type="button" onClick={() => router.back()} value="戻る" />
+            </form>
+          )}
+        </React.Fragment>
+      );
+      //#endregion JSX
+    } else {
+      if (productAddCheckParam.is_exception) {
+        items.push(msgElementSystemError);
+      }
     }
   }
 
@@ -132,55 +156,76 @@ const ProductAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
  * SSR
  * @param context
  */
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  //#region refererチェック
-  const refcomp_result = CompReferer(
-    context.req.headers.referer,
-    context.req.headers.host,
-    previous_page
-  );
-  //#endregion refererチェック
+export const getServerSideProps: GetServerSideProps = withSession(
+  async (context) => {
+    //#region refererチェック
+    const refcomp_result = CompReferer(
+      context.req.headers.referer,
+      context.req.headers.host,
+      previous_page
+    );
+    //#endregion refererチェック
 
-  if (context.req.method == "POST" && refcomp_result) {
     let productAddCheckParam: ProductAddCheckParam = {
+      login: null,
+      login_staff_code: "",
+      login_staff_name: "",
       is_worng_price: false,
       is_exception: false,
       name: "",
       price: "",
     };
 
-    //#region POSTメッセージからパラメータを取得する
-    const body = await getRawBody(context.req);
-    const body_string = body.toString();
-    console.log(body_string);
-    const body_json = formUrlDecoded(body_string);
-    //console.log(body_json)
+    const req = context.req;
+    const res = context.res;
 
-    const name = typeof body_json.name == "undefined" ? "" : body_json.name;
-    const price = typeof body_json.price == "undefined" ? "" : body_json.price;
-    //console.log(product_add_param);
+    if (context.req.method == "POST" && refcomp_result) {
+      // ログインチェック
+      const login = req.session.get("login");
+      if (login != void 0) {
+        // ログイン済みだったら
+        productAddCheckParam.login = login;
+        productAddCheckParam.login_staff_code = req.session.get("staff_code");
+        productAddCheckParam.login_staff_name = req.session.get("staff_name");
+      } else {
+        // 未ログインだったら
+        return { props: productAddCheckParam };
+      }
 
-    productAddCheckParam.name = htmlspecialchars(name);
-    productAddCheckParam.price = htmlspecialchars(price);
-    //#endregion POSTメッセージからパラメータを取得する
+      //#region POSTメッセージからパラメータを取得する
+      const body = await getRawBody(context.req);
+      const body_string = body.toString();
+      console.log(body_string);
+      const body_json = formUrlDecoded(body_string);
+      //console.log(body_json)
 
-    //const match_result = productAddCheckParam.price.match(/^[^0-9]+/);
-    const match_result = productAddCheckParam.price.match(/^[0-9]+$/);
-    //console.log(match_result);
-    if (match_result == null) {
-      productAddCheckParam.is_worng_price = true;
+      const name = typeof body_json.name == "undefined" ? "" : body_json.name;
+      const price =
+        typeof body_json.price == "undefined" ? "" : body_json.price;
+      //console.log(product_add_param);
+
+      productAddCheckParam.name = htmlspecialchars(name);
+      productAddCheckParam.price = htmlspecialchars(price);
+      //#endregion POSTメッセージからパラメータを取得する
+
+      //const match_result = productAddCheckParam.price.match(/^[^0-9]+/);
+      const match_result = productAddCheckParam.price.match(/^[0-9]+$/);
+      //console.log(match_result);
+      if (match_result == null) {
+        productAddCheckParam.is_worng_price = true;
+      }
+      return {
+        props: productAddCheckParam,
+      };
+    } else {
+      if (context.res) {
+        context.res.writeHead(303, { Location: redirect_page });
+        context.res.end();
+      }
+
+      return { props: {} };
     }
-    return {
-      props: productAddCheckParam,
-    };
-  } else {
-    if (context.res) {
-      context.res.writeHead(303, { Location: redirect_page });
-      context.res.end();
-    }
-
-    return { props: {} };
   }
-};
+);
 
 export default ProductAddCheck;

@@ -15,6 +15,7 @@ import path from "path";
 import htmlspecialchars from "htmlspecialchars";
 import md5 from "md5";
 import withSession from "../../lib/session";
+// import { applySession } from "next-iron-session";
 import {
   dbFilePath,
   dbFileName,
@@ -129,9 +130,12 @@ const StaffLoginCheck = (staffLoginCheckParam: StaffLoginCheckParam) => {
  * SSR
  * @param context
  */
+// export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 export const getServerSideProps: GetServerSideProps = withSession(
-  async ({ req, res }) => {
-    // export const getServerSideProps: GetServerSideProps = async ({req, res}) => {
+  async (context) => {
+    const req = context.req;
+    const res = context.res;
+
     let staffLoginCheckParam: StaffLoginCheckParam = {
       is_exception: false,
       is_noexist_staffcode: false,
@@ -148,6 +152,16 @@ export const getServerSideProps: GetServerSideProps = withSession(
       previous_page
     );
     //#endregion refererチェック
+
+    // await applySession(req, res, {
+    //   password: process.env.SECRET_COOKIE_PASSWORD,
+    //   cookieName: "nextjs-study04",
+    //   cookieOptions: {
+    //     // the next line allows to use the session in non-https environements like
+    //     // Next.js dev mode (http://localhost:3000)
+    //     secure: process.env.NODE_ENV === "production",
+    //   },
+    // });
 
     if (req.method == "POST" && refcomp_result) {
       //#region POSTメッセージからパラメータを取得する

@@ -16,8 +16,13 @@ import {
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";
+import withSession from "../../lib/session";
+import { msgYouHaveNotLogin } from "../../lib/global_const";
 
 type StaffListParam = {
+  login: string;
+  login_staff_code: string;
+  login_staff_name: string;
   is_exception: boolean;
   staffs: {
     name: string;
@@ -37,7 +42,7 @@ const GenSelectStaffFormChildren = (staffListParam: StaffListParam) => {
   const items = [];
   staffListParam.staffs.map((staff) => {
     items.push(
-      <React.Fragment key={staff.code.toString()} >
+      <React.Fragment key={staff.code.toString()}>
         <input type="radio" name="staffcode" value={staff.code} />
         {staff.code}: {staff.name}
         <br />
@@ -59,51 +64,68 @@ const StaffList = (staffListParam: StaffListParam) => {
         <meta charSet="UTF-8" />
         <title>ろくまる農園 スタッフ管理メニュー</title>
       </Head>
+      {
+        /* ログインしていたら */
+        staffListParam.login != void 0 && (
+          <React.Fragment>
+            {staffListParam.login_staff_name}さん ログイン中
+            <br />
+          </React.Fragment>
+        )
+      }
+      <h2>スタッフ管理 メニュー</h2>
     </React.Fragment>
   );
 
-  if (!staffListParam.is_exception) {
-    items.push(
-      <React.Fragment>
-        <h2>スタッフ管理 メニュー</h2>
-        <br />
-        {/* 分岐画面へ移行する */}
-        {/*
+  if (staffListParam.login == void 0) {
+    // ログインしていなかったら
+    // 未ログインメッセージを表示
+    items.push(msgYouHaveNotLogin);
+  } else {
+    if (!staffListParam.is_exception) {
+      items.push(
+        <React.Fragment>
+          <br />
+          {/* 分岐画面へ移行する */}
+          {/*
         <form method="post" action="staff_branch">
         */}
-        <form method="post" action={next_page}>
-          <b>新規スタッフ 追加</b>
-          <br/>
-          <input
-            key="add"
-            type="submit"
-            name="add"
-            value="追加"
-            style={{ width: 128 }}
-          />
-          <br />
-          <br />
-          <br />
-          <b>既存スタッフ 参照・修正・削除</b>
-          <br />
+          <form method="post" action={next_page}>
+            <b>新規スタッフ 追加</b>
+            <br />
+            <input
+              key="add"
+              type="submit"
+              name="add"
+              value="追加"
+              style={{ width: 128 }}
+            />
+            <br />
+            <br />
+            <br />
+            <b>既存スタッフ 参照・修正・削除</b>
+            <br />
           ※スタッフを選択し、操作したいボタンを押してください。
           <br />
+            <br />
+            {GenSelectStaffFormChildren(staffListParam)}
+            <input key="disp" type="submit" name="disp" value="参照" />
+            <input key="edit" type="submit" name="edit" value="修正" />
+            <input key="delete" type="submit" name="delete" value="削除" />
+          </form>
           <br />
-          {GenSelectStaffFormChildren(staffListParam)}
-          <input key="disp" type="submit" name="disp" value="参照" />
-          <input key="edit" type="submit" name="edit" value="修正" />
-          <input key="delete" type="submit" name="delete" value="削除" />
-        </form>
-        <br />
-        <Link href="/staff_login/staff_top"><a>ショップ管理トップメニューへ</a></Link>
-      </React.Fragment>
-    );
-  } else {
-    //#region エラーメッセージを表示
-    items.push(<React.Fragment>{msgElementSystemError}</React.Fragment>);
-    //#endregion エラーメッセージを表示
+          <Link href="/staff_login/staff_top">
+            <a>ショップ管理トップメニューへ</a>
+          </Link>
+        </React.Fragment>
+      );
+    } else {
+      //#region エラーメッセージを表示
+      items.push(<React.Fragment>{msgElementSystemError}</React.Fragment>);
+      //#endregion エラーメッセージを表示
+    }
   }
-
+  
   return <React.Fragment>{items}</React.Fragment>;
 };
 
@@ -111,41 +133,62 @@ const StaffList = (staffListParam: StaffListParam) => {
  * SSR
  * @param context
  */
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  //#region DBへstaffを追加
-  // DBファイルのパスを取得
-  const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
-  const filename: string = dbFileName;
-  const fullPath: string = path.join(dbWorkDirectory, filename);
+export const getServerSideProps: GetServerSideProps = withSession(
+  async (context) => {
+    let is_exception = false;
+    let staffListParam: StaffListParam = {
+      login: null,
+      login_staff_code: "",
+      login_staff_name: "",
+      is_exception: is_exception,
+      staffs: Array(),
+    };
 
-  let is_exception = false;
-  let staffListParam: StaffListParam = {
-    is_exception: is_exception,
-    staffs: Array(),
-  };
-  try {
-    // DBオープン
-    const db = await open({
-      filename: fullPath,
-      driver: sqlite3.Database,
-    });
-    //db.serialize();
+    const req = context.req;
+    const res = context.res;
 
-    const staffs = await db.all("SELECT code,name FROM mst_staff WHERE 1");
-    staffs.map((staff) => {
-      staffListParam.staffs.push(staff);
-    });
-    //console.log(staffListParam);
-  } catch (e) {
-    is_exception = true;
-  } finally {
-    staffListParam.is_exception = is_exception;
+    // ログインチェック
+    const login = req.session.get("login");
+    if (login != void 0) {
+      // ログイン済みだったら
+      staffListParam.login = login;
+      staffListParam.login_staff_code = req.session.get("staff_code");
+      staffListParam.login_staff_name = req.session.get("staff_name");
+    } else {
+      // 未ログインだったら
+      return { props: staffListParam };
+    }
+
+    //#region DBへstaffを追加
+    // DBファイルのパスを取得
+    const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
+    const filename: string = dbFileName;
+    const fullPath: string = path.join(dbWorkDirectory, filename);
+
+    try {
+      // DBオープン
+      const db = await open({
+        filename: fullPath,
+        driver: sqlite3.Database,
+      });
+      //db.serialize();
+
+      const staffs = await db.all("SELECT code,name FROM mst_staff WHERE 1");
+      staffs.map((staff) => {
+        staffListParam.staffs.push(staff);
+      });
+      //console.log(staffListParam);
+    } catch (e) {
+      is_exception = true;
+    } finally {
+      staffListParam.is_exception = is_exception;
+    }
+    //#endregion DBへstaffを追加
+
+    return {
+      props: staffListParam,
+    };
   }
-  //#endregion DBへstaffを追加
-
-  return {
-    props: staffListParam,
-  };
-};
+);
 
 export default StaffList;

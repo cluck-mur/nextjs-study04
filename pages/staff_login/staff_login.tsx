@@ -15,14 +15,12 @@ const StaffLogin = ({}) => {
         <meta charSet="UTF-8" />
         <title>ろくまる農園 スタッフログイン</title>
       </Head>
+      <h2>スタッフログイン</h2>
     </React.Fragment>
   );
 
   items.push(
     <React.Fragment key="main">
-      スタッフログイン
-      <br />
-      <br />
       <form method="post" action="staff_login_check">
         スタッフコード
         <br />
@@ -38,7 +36,7 @@ const StaffLogin = ({}) => {
     </React.Fragment>
   );
 
-  return <React.Fragment>{items}</React.Fragment>
+  return <React.Fragment>{items}</React.Fragment>;
 };
 
 export const getStaticProps: GetStaticProps = async () => {

@@ -54,8 +54,8 @@ const ProductAdd = (productAddParam: ProductAddParam) => {
         ※商品を新たに登録します。
         <br />
         <br />
-        {/* <form method="post" action="product_add_check" encType="multipart/form-data"> */}
-        <form method="post" action="product_add_check">
+        <form method="post" action="product_add_check" encType="multipart/form-data">
+        {/* <form method="post" action="product_add_check"> */}
           商品名を入力してください。
           <br />
           <input

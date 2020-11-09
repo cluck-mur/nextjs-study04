@@ -18,6 +18,8 @@ import {
 import { CompReferer } from "../../lib/myUtils";
 import withSession from "../../lib/session";
 import { msgYouHaveNotLogin } from "../../lib/global_const";
+import parse, { Body } from "then-busboy";
+import fs from "fs";
 
 type ProductAddCheckParam = {
   login: string;
@@ -27,6 +29,7 @@ type ProductAddCheckParam = {
   is_exception: boolean;
   name: string | undefined;
   price: string | undefined;
+  image: string | undefined;
 };
 
 const next_page: string = "/product/product_add_done";
@@ -174,6 +177,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
       is_exception: false,
       name: "",
       price: "",
+      image: "",
     };
 
     const req = context.req;
@@ -193,26 +197,77 @@ export const getServerSideProps: GetServerSideProps = withSession(
       }
 
       //#region POSTメッセージからパラメータを取得する
-      const body = await getRawBody(context.req);
-      const body_string = body.toString();
-      console.log(body_string);
-      const body_json = formUrlDecoded(body_string);
-      //console.log(body_json)
+      const body: Body = await parse(req);
+      const body_json = body.json();
+      console.log(body_json);
 
       const name = typeof body_json.name == "undefined" ? "" : body_json.name;
       const price =
         typeof body_json.price == "undefined" ? "" : body_json.price;
-      //console.log(product_add_param);
 
       productAddCheckParam.name = htmlspecialchars(name);
       productAddCheckParam.price = htmlspecialchars(price);
       //#endregion POSTメッセージからパラメータを取得する
+
+      // const { files, fields } = await asyncBusboy(req, {
+      //   limits: { fileSize: 1000 },
+      // });
+      /*
+      const { files, fields } = await asyncBusboy(req);
+      console.log(files);
+      console.log(fields);
+
+      const name = typeof fields.name == "undefined" ? "" : fields.name;
+      const price = typeof fields.price == "undefined" ? "" : fields.price;
+
+      productAddCheckParam.name = htmlspecialchars(name);
+      productAddCheckParam.price = htmlspecialchars(price);
+      //#endregion POSTメッセージからパラメータを取得する
+
+      //#region POSTメッセージからファイルを取得する
+      if (files != void 0 && files.length > 0) {
+        files.map((file) => {
+          console.log(file);
+          console.log(file.path);
+          console.log(file["kFs"].fstat());
+        });
+      }
+      */
+      //#endregion POSTメッセージからファイルを取得する
 
       //const match_result = productAddCheckParam.price.match(/^[^0-9]+/);
       const match_result = productAddCheckParam.price.match(/^[0-9]+$/);
       //console.log(match_result);
       if (match_result == null) {
         productAddCheckParam.is_worng_price = true;
+      } else {
+        //#region 画像ファイルを/public/uploadにコピーする
+        if (
+          body_json.image.length == void 0 ||
+          (!(body_json.image.length == void 0) && body_json.image.length == 1)
+        ) {
+          let image_obj = body_json.image;
+          if (!(body_json.image.length == void 0)) {
+            image_obj = body_json.image[0];
+          }
+          // POSTメッセージに含まれるjpg/pngファイルが1つの場合のみ処理する
+          if (
+            (image_obj.mime == "image/jpeg" || image_obj.mime == "image/png") &&
+            image_obj.originalFilename != void 0 &&
+            image_obj.originalFilename.length > 0
+          ) {
+            const files = body.fromData();
+            //#region ファイルコピー処理
+            const rs = body.__strream;
+            const ws = fs.createWriteStream(body.image.path, {
+              autoClose: true,
+            });
+
+            productAddCheckParam.image = image_obj.originalFilename;
+            //#endregion ファイルコピー処理
+          }
+        }
+        //#endregion 画像ファイルを/public/uploadにコピーする
       }
       return {
         props: productAddCheckParam,

@@ -143,9 +143,12 @@ export const getServerSideProps: GetServerSideProps = withSession(
       const name = typeof body_json.name == "undefined" ? "" : body_json.name;
       const price =
         typeof body_json.price == "undefined" ? "" : body_json.price;
+      const image =
+        typeof body_json.image == "undefined" ? "" : body_json.image;
 
       const product_name = htmlspecialchars(name);
       const product_price = htmlspecialchars(price);
+      const product_image = htmlspecialchars(image);
       //#endregion POSTメッセージからパラメータを取得する
 
       //#region DBへproductを追加
@@ -162,7 +165,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
           driver: sqlite3.Database,
         });
         //db.serialize();
-        const sql = `INSERT INTO mst_product(name,price) VALUES ("${product_name}",${product_price})`;
+        const sql = `INSERT INTO mst_product(name,price,gazou) VALUES ("${product_name}",${product_price},"${product_image}")`;
         let stmt = await db.prepare(sql);
         try {
           await stmt.run();
@@ -181,6 +184,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
       productAddDoneParam.is_exception = is_exception;
       productAddDoneParam.product_name = product_name;
       productAddDoneParam.product_price = product_price;
+      productAddDoneParam.product_image = product_image;
       //console.log(product_add_param);
 
       return {

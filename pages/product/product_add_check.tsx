@@ -29,6 +29,9 @@ type ProductAddCheckParam = {
   login_staff_code: string;
   login_staff_name: string;
   is_worng_price: boolean;
+  is_wrong_image_type: boolean;
+  // is_multi_mages: boolean;
+  is_toobig_image: boolean;
   is_exception: boolean;
   name: string | undefined;
   price: string | undefined;
@@ -47,6 +50,7 @@ const ProductAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
   //#region 前画面からデータを受け取る
   const product_name = productAddCheckParam.name;
   let product_price = productAddCheckParam.price;
+  const product_image = productAddCheckParam.image;
   //#endregion 前画面からデータを受け取る
 
   const items = [];
@@ -85,7 +89,7 @@ const ProductAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
         name_str = "商品名が入力されていません";
       } else {
         // もし商品名が入力されていたら商品名を表示する
-        name_str = `商品名：${product_name}`;
+        name_str = `${product_name}`;
       }
       //#endregion 画面用データを設定
 
@@ -116,7 +120,11 @@ const ProductAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
             <React.Fragment key="success"></React.Fragment>
           )}
           {/* 商品名表示 */}
-          <div>{name_str}</div>
+          <div>
+            <b>商品名</b>
+            <br />
+            {name_str}
+          </div>
           {/* 不正価格警告文表示 */}
           {productAddCheckParam.is_worng_price && (
             <div>
@@ -124,12 +132,68 @@ const ProductAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
               <br />
             </div>
           )}
+          {can_move_next_page && (
+            <React.Fragment>
+              <div>
+                <b>価格</b>
+                <br />
+                {product_price}円
+              </div>
+            </React.Fragment>
+          )}
+          {can_move_next_page && (
+            <React.Fragment>
+              <div>
+                <b>画像</b>
+                <br />
+              </div>
+            </React.Fragment>
+          )}
+          {can_move_next_page && productAddCheckParam.is_wrong_image_type ? (
+            <React.Fragment>
+              <div>ファイルタイプが違います。jpeg, pngを指定してください。</div>
+              <br />
+            </React.Fragment>
+          ) : (
+            <React.Fragment></React.Fragment>
+          )}
+          {can_move_next_page && productAddCheckParam.is_toobig_image ? (
+            <React.Fragment>
+              <div>画像が大きすぎます。</div>
+              <br />
+            </React.Fragment>
+          ) : (
+            <React.Fragment></React.Fragment>
+          )}
+          {/* {can_move_next_page && productAddCheckParam.is_multi_mages ? (
+            <React.Fragment>
+              <div>２つ以上のファイルが指定されています。</div>
+              <br />
+            </React.Fragment>
+          ) : (
+            <React.Fragment></React.Fragment>
+          )} */}
+          {can_move_next_page &&
+          product_image != void 0 &&
+          product_image.length > 0 ? (
+            <React.Fragment>
+              <p style={{ width: "150px", height: "150px" }}>
+                <img
+                  width="100%"
+                  src={"/upload/" + product_image}
+                />
+              </p>
+              <br />
+            </React.Fragment>
+          ) : (
+            <React.Fragment></React.Fragment>
+          )}
           {can_move_next_page ? (
             <React.Fragment>
-              <div>価格：{product_price}円</div>
               <form method="post" action={next_page}>
                 <input type="hidden" name="name" value={product_name} />
                 <input type="hidden" name="price" value={product_price} />
+                <input type="hidden" name="image" value={product_image} />
                 {/* <br /> */}
                 {/* <input type="button" onClick={() => router.back()} value="戻る" /> */}
                 <input
@@ -188,6 +252,9 @@ export const getServerSideProps: GetServerSideProps = withSession(
       login_staff_code: "",
       login_staff_name: "",
       is_worng_price: false,
+      // is_multi_mages: false,
+      is_wrong_image_type: false,
+      is_toobig_image: false,
       is_exception: false,
       name: "",
       price: "",
@@ -213,7 +280,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
       //#region POSTメッセージからパラメータを取得する
       const body: Body = await parse(req);
       const body_json = body.json();
-      console.log(body_json);
+      //console.log(body_json);
 
       const name = typeof body_json.name == "undefined" ? "" : body_json.name;
       const price =
@@ -223,80 +290,82 @@ export const getServerSideProps: GetServerSideProps = withSession(
       productAddCheckParam.price = htmlspecialchars(price);
       //#endregion POSTメッセージからパラメータを取得する
 
-      // const { files, fields } = await asyncBusboy(req, {
-      //   limits: { fileSize: 1000 },
-      // });
-      /*
-      const { files, fields } = await asyncBusboy(req);
-      console.log(files);
-      console.log(fields);
-
-      const name = typeof fields.name == "undefined" ? "" : fields.name;
-      const price = typeof fields.price == "undefined" ? "" : fields.price;
-
-      productAddCheckParam.name = htmlspecialchars(name);
-      productAddCheckParam.price = htmlspecialchars(price);
-      //#endregion POSTメッセージからパラメータを取得する
-
-      //#region POSTメッセージからファイルを取得する
-      if (files != void 0 && files.length > 0) {
-        files.map((file) => {
-          console.log(file);
-          console.log(file.path);
-          console.log(file["kFs"].fstat());
-        });
-      }
-      */
-      //#endregion POSTメッセージからファイルを取得する
-
       //const match_result = productAddCheckParam.price.match(/^[^0-9]+/);
       const match_result = productAddCheckParam.price.match(/^[0-9]+$/);
+      const price_int = parseInt(productAddCheckParam.price, 10);
       //console.log(match_result);
-      if (match_result == null) {
+      if (
+        match_result == null ||
+        isNaN(price_int) ||
+        price_int == void 0 ||
+        price_int <= 0
+      ) {
         productAddCheckParam.is_worng_price = true;
       } else {
         //#region 画像ファイルを/public/uploadにコピーする
-        if (
-          body_json.image.length == void 0 ||
-          (!(body_json.image.length == void 0) && body_json.image.length == 1)
-        ) {
+        // if (body_json.image.length == void 0) {
+        if (body_json.image != void 0) {
+          // イメージが添付されてる場合
+          // if (
+          //   !(body_json.image.length == void 0) &&
+          //   body_json.image.length == 1
+          // ) {
           let image_obj = body_json.image;
-          if (!(body_json.image.length == void 0)) {
-            image_obj = body_json.image[0];
-          }
+          // if (!(body_json.image.length == void 0)) {
+          //   image_obj = body_json.image[0];
+          // }
           // POSTメッセージに含まれるjpg/pngファイルが1つの場合のみ処理する
-          if (
-            (image_obj.mime == "image/jpeg" || image_obj.mime == "image/png") &&
-            image_obj.originalFilename != void 0 &&
-            image_obj.originalFilename.length > 0
-          ) {
-            //#region ファイルコピー処理
-            // uploadファイルのパスを取得
-            const dbWorkDirectory = path.join(process.cwd(), uploadFilePath);
-            const filename: string = image_obj.originalFilename;
-            const fullPath: string = path.join(dbWorkDirectory, filename);
+          if (image_obj.mime == "image/jpeg" || image_obj.mime == "image/png") {
+            if (
+              image_obj.originalFilename != void 0 &&
+              image_obj.originalFilename.length > 0
+            ) {
+              const rimage_stat = fs.statSync(body_json.image.path);
+              if (rimage_stat.size > 1048576) {
+                // ファイルサイズが大きすぎる
+                productAddCheckParam.is_toobig_image = true;
+              } else {
+                //#region ファイルコピー処理
+                // uploadファイルのパスを取得
+                const dbWorkDirectory = path.join(
+                  process.cwd(),
+                  uploadFilePath
+                );
+                const filename: string = image_obj.originalFilename;
+                const fullPath: string = path.join(dbWorkDirectory, filename);
 
-            let rs: ReadStream = null;
-            let ws: WriteStream = null;
-            try {
-              rs = fs.createReadStream(body_json.image.path, {
-                autoClose: true,
-              });
-              ws = fs.createWriteStream(fullPath, {
-                autoClose: true,
-              });
+                let rs: ReadStream = null;
+                let ws: WriteStream = null;
+                try {
+                  rs = fs.createReadStream(body_json.image.path, {
+                    autoClose: true,
+                  });
+                  ws = fs.createWriteStream(fullPath, {
+                    autoClose: true,
+                    flags: "w",
+                  });
 
-              await transferImageFile(rs, ws);
+                  // ファイルコピー
+                  await transferImageFile(rs, ws);
 
-              productAddCheckParam.image = image_obj.originalFilename;
-              //#endregion ファイルコピー処理
-            } catch (e) {
-              throw e;
-            } finally {
-              rs.close();
-              ws.close();
+                  productAddCheckParam.image = image_obj.originalFilename;
+                  //#endregion ファイルコピー処理
+                } catch (e) {
+                  throw e;
+                } finally {
+                  rs.close();
+                  ws.close();
+                }
+              }
             }
+          } else {
+            // イメージタイプがエラー
+            productAddCheckParam.is_wrong_image_type = true;
           }
+          // } else {
+          //   // 複数のイメージファイルが添付されている。
+          //   productAddCheckParam.is_multi_mages = true;
+          // }
         }
         //#endregion 画像ファイルを/public/uploadにコピーする
       }

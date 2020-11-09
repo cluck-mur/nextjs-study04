@@ -12,6 +12,7 @@ import formUrlDecoded from "form-urldecoded";
 import htmlspecialchars from "htmlspecialchars";
 import md5 from "md5";
 import {
+  uploadFilePath,
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";
@@ -19,7 +20,9 @@ import { CompReferer } from "../../lib/myUtils";
 import withSession from "../../lib/session";
 import { msgYouHaveNotLogin } from "../../lib/global_const";
 import parse, { Body } from "then-busboy";
-import fs from "fs";
+import fs, { ReadStream, WriteStream } from "fs";
+import path from "path";
+import { Stream } from "stream";
 
 type ProductAddCheckParam = {
   login: string;
@@ -156,6 +159,17 @@ const ProductAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
 };
 
 /**
+ * ファイルコピー
+ * @param rs
+ * @param ws
+ */
+const transferImageFile = async (rs: ReadStream, ws: WriteStream) => {
+  for await (const chunk of rs) {
+    await ws.write(chunk);
+  }
+};
+
+/**
  * SSR
  * @param context
  */
@@ -256,15 +270,32 @@ export const getServerSideProps: GetServerSideProps = withSession(
             image_obj.originalFilename != void 0 &&
             image_obj.originalFilename.length > 0
           ) {
-            const files = body.fromData();
             //#region ファイルコピー処理
-            const rs = body.__strream;
-            const ws = fs.createWriteStream(body.image.path, {
-              autoClose: true,
-            });
+            // uploadファイルのパスを取得
+            const dbWorkDirectory = path.join(process.cwd(), uploadFilePath);
+            const filename: string = image_obj.originalFilename;
+            const fullPath: string = path.join(dbWorkDirectory, filename);
 
-            productAddCheckParam.image = image_obj.originalFilename;
-            //#endregion ファイルコピー処理
+            let rs: ReadStream = null;
+            let ws: WriteStream = null;
+            try {
+              rs = fs.createReadStream(body_json.image.path, {
+                autoClose: true,
+              });
+              ws = fs.createWriteStream(fullPath, {
+                autoClose: true,
+              });
+
+              await transferImageFile(rs, ws);
+
+              productAddCheckParam.image = image_obj.originalFilename;
+              //#endregion ファイルコピー処理
+            } catch (e) {
+              throw e;
+            } finally {
+              rs.close();
+              ws.close();
+            }
           }
         }
         //#endregion 画像ファイルを/public/uploadにコピーする

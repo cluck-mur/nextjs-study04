@@ -76,6 +76,7 @@ const ProductEditDone = (productEditDoneParam: ProductEditDoneParam) => {
         <React.Fragment key="success">
           {productEditDoneParam.product_name} を修正しました。
           <br />
+          <br />
           <input
             type="button"
             onClick={() => {

@@ -75,6 +75,7 @@ const ProductDeleteDone = (productDeleteDoneParam: ProductDeleteDoneParam) => {
         <React.Fragment>
           {productDeleteDoneParam.product_name} を削除しました。
           <br />
+          <br />
           <input
             type="button"
             onClick={() => {

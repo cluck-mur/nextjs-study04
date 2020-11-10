@@ -369,14 +369,14 @@ export const getServerSideProps: GetServerSideProps = withSession(
         //#endregion 画像ファイルを/public/uploadにコピーする
       }
       //#region テンポラリファイル削除
-      if (
-        body_json.image.path != void 0 &&
-        body_json.image.path.length > 0
-      ) {
-        if (fs.existsSync(body_json.image.path)) {
-          fs.unlinkSync(body_json.image.path);
-        }
-      }
+      // if (
+      //   body_json.image.path != void 0 &&
+      //   body_json.image.path.length > 0
+      // ) {
+      //   if (fs.existsSync(body_json.image.path)) {
+      //     fs.unlinkSync(body_json.image.path);
+      //   }
+      // }
       //#endregion テンポラリファイル削除
 
       return {

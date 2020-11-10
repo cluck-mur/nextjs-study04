@@ -74,6 +74,7 @@ const ProductAddDone = (productAddDoneParam: ProductAddDoneParam) => {
         <React.Fragment key="success">
           {productAddDoneParam.product_name} を追加しました。
           <br />
+          <br />
           <input
             type="button"
             onClick={() => {

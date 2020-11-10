@@ -145,6 +145,12 @@ export const getServerSideProps: GetServerSideProps = withSession(
         typeof body_json.price == "undefined" ? "" : body_json.price;
       const image =
         typeof body_json.image == "undefined" ? "" : body_json.image;
+      const image_old =
+        typeof body_json.image_old == "undefined" ? "" : body_json.image_old;
+      const image_change =
+        typeof body_json.imagechange == "undefined"
+          ? ""
+          : body_json.imagechange;
 
       const product_name = htmlspecialchars(name);
       const product_price = htmlspecialchars(price);

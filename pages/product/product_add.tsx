@@ -56,7 +56,7 @@ const ProductAdd = (productAddParam: ProductAddParam) => {
         <br />
         <form method="post" action="product_add_check" encType="multipart/form-data">
         {/* <form method="post" action="product_add_check"> */}
-          商品名を入力してください。
+          <b>商品名を入力してください。(必須)</b>
           <br />
           <input
             type="text"
@@ -66,7 +66,7 @@ const ProductAdd = (productAddParam: ProductAddParam) => {
           />
           最大30文字
           <br />
-          価格を入力してください。
+          <b>価格を入力してください。(必須)</b>
           <br />
           <input
             type="text"
@@ -78,9 +78,11 @@ const ProductAdd = (productAddParam: ProductAddParam) => {
           />
           円
           <br />
-          画像を選んでください。
+          <b>画像を選んでください。(任意)</b>
           <br />
           <input type="file" name="image" width="400px" />
+          <br />
+          <small>※ファイルサイズ1Mバイト以下のjpegまたはpng</small>
           <br />
           <br />
           <input type="button" onClick={() => router.back()} value="戻る" />

@@ -35,6 +35,7 @@ type ProductEditParam = {
   product_name: string;
   product_price: string;
   product_image: string;
+  product_image_old: string;
 };
 
 const next_page: string = "/product/product_edit_check";
@@ -49,6 +50,7 @@ const ProductEdit = (productEditParam: ProductEditParam) => {
   //#region 前画面からデータを受け取る
   const product_name = productEditParam.product_name;
   const product_image = productEditParam.product_image;
+  const product_image_old = productEditParam.product_image_old;
   const router = useRouter();
   //#endregion 前画面からデータを受け取る
 
@@ -127,20 +129,21 @@ const ProductEdit = (productEditParam: ProductEditParam) => {
         <br />
         {productEditParam.product_code}
         <br /> */}
-            <form method="post" action={next_page}>
-              商品コード
+            <form method="post" action={next_page} encType="multipart/form-data">
+              <b>商品コード</b>
               <br />
               {/* <input type="hidden" name="code" value={productEditParam.product_code} /> */}
               <input
-                type="text"
+                type="hidden"
                 name="code"
                 width="200px"
-                readOnly
+                // readOnly
                 style={{ background: "#dddddd" }}
                 defaultValue={productEditParam.product_code}
               />
+              {productEditParam.product_code}
               <br />
-              商品名
+              <b>商品名</b>
               <br />
               <input
                 type="text"
@@ -152,7 +155,7 @@ const ProductEdit = (productEditParam: ProductEditParam) => {
               />
               最大14文字
               <br />
-              価格
+              <b>価格</b>
               <br />
               <input
                 type="text"
@@ -164,16 +167,35 @@ const ProductEdit = (productEditParam: ProductEditParam) => {
               />
               円
               <br />
-              画像
+              <b>画像を変更する</b>
+              <br />
+              <input type="radio" name="imagechange" value="no" defaultChecked={true} />いいえ
+              <br />
+              <input type="radio" name="imagechange" value="yes" />はい
+              <br />
+              <b>現在の画像</b>
               <br />
               <input
-                type="text"
-                name="image"
+                type="hidden"
+                name="image_old"
                 width="200px"
-                // maxLength={productNameMaxLegth}
-                defaultValue={productEditParam.product_image}
-                //onChange={onChangeEvent}
+                readOnly
+                style={{ background: "#dddddd" }}
+                defaultValue={product_image_old}
               />
+              {product_image_old == void 0 || product_image_old == "" ? (
+                <img src="/now_printing.png" />
+              ) : (
+                <p style={{ width: "150px", height: "150px" }}>
+                  <img width="100%" src={"/upload/" + product_image_old} />
+                </p>
+              )}
+              <br />
+              <b>新しい画像</b>
+              <br />
+              <input type="file" name="image" width="400px" />
+              <br />
+              <small>※ファイルサイズ1Mバイト以下のjpegまたはpng</small>
               <br />
               <br />
               <input type="button" onClick={() => router.back()} value="戻る" />
@@ -221,6 +243,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
       product_name: "",
       product_price: "",
       product_image: "",
+      product_image_old: "",
     };
 
     const req = context.req;
@@ -273,7 +296,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
           const product: {
             name: string;
             price: number;
-            image: string;
+            gazou: string;
           }[] = await db.all(
             `SELECT name,price,gazou FROM mst_product WHERE code=${productcode}`
           );
@@ -283,10 +306,11 @@ export const getServerSideProps: GetServerSideProps = withSession(
               product[0].name == "undefined" ? "" : product[0].name;
             const product_price = product[0].price;
             const product_image =
-              product[0].image == "undefined" ? "" : product[0].image;
+              product[0].gazou == "undefined" ? "" : product[0].gazou;
             productEditParam.product_name = htmlspecialchars(product_name);
             productEditParam.product_price = htmlspecialchars(product_price);
             productEditParam.product_image = htmlspecialchars(product_image);
+            productEditParam.product_image_old = productEditParam.product_image.toString();
           } else if (product.length < 1) {
             productEditParam.is_noexist_productcode = true;
           } else {

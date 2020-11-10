@@ -16,13 +16,12 @@ import {
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";
-import { CompReferer } from "../../lib/myUtils";
+import { CompReferer, transferImageFile } from "../../lib/myUtils";
 import withSession from "../../lib/session";
 import { msgYouHaveNotLogin } from "../../lib/global_const";
 import parse, { Body } from "then-busboy";
 import fs, { ReadStream, WriteStream } from "fs";
 import path from "path";
-import { Stream } from "stream";
 
 type ProductAddCheckParam = {
   login: string;
@@ -177,12 +176,13 @@ const ProductAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
           product_image != void 0 &&
           product_image.length > 0 ? (
             <React.Fragment>
-              <p style={{ width: "150px", height: "150px" }}>
-                <img
-                  width="100%"
-                  src={"/upload/" + product_image}
-                />
-              </p>
+              {product_image == void 0 || product_image == "" ? (
+                <img src="/now_printing.png" />
+              ) : (
+                <p style={{ width: "150px", height: "150px" }}>
+                  <img width="100%" src={"/upload/" + product_image} />
+                </p>
+              )}
               <br />
             </React.Fragment>
           ) : (
@@ -223,15 +223,15 @@ const ProductAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
 };
 
 /**
- * ファイルコピー
+ * イメージファイルコピー
  * @param rs
  * @param ws
  */
-const transferImageFile = async (rs: ReadStream, ws: WriteStream) => {
-  for await (const chunk of rs) {
-    await ws.write(chunk);
-  }
-};
+// const transferImageFile = async (rs: ReadStream, ws: WriteStream) => {
+//   for await (const chunk of rs) {
+//     await ws.write(chunk);
+//   }
+// };
 
 /**
  * SSR
@@ -252,8 +252,8 @@ export const getServerSideProps: GetServerSideProps = withSession(
       login_staff_code: "",
       login_staff_name: "",
       is_worng_price: false,
-      // is_multi_mages: false,
       is_wrong_image_type: false,
+      // is_multi_mages: false,
       is_toobig_image: false,
       is_exception: false,
       name: "",
@@ -282,9 +282,14 @@ export const getServerSideProps: GetServerSideProps = withSession(
       const body_json = body.json();
       //console.log(body_json);
 
-      const name = typeof body_json.name == "undefined" ? "" : body_json.name;
+      const name =
+        typeof body_json.name == void 0 || body_json.name == 0
+          ? ""
+          : body_json.name;
       const price =
-        typeof body_json.price == "undefined" ? "" : body_json.price;
+        typeof body_json.price == void 0 || body_json.price == 0
+          ? ""
+          : body_json.price;
 
       productAddCheckParam.name = htmlspecialchars(name);
       productAddCheckParam.price = htmlspecialchars(price);
@@ -303,8 +308,10 @@ export const getServerSideProps: GetServerSideProps = withSession(
         productAddCheckParam.is_worng_price = true;
       } else {
         //#region 画像ファイルを/public/uploadにコピーする
-        // if (body_json.image.length == void 0) {
-        if (body_json.image != void 0) {
+        if (
+          body_json.image.originalFilename != void 0 &&
+          body_json.image.originalFilename.length > 0
+        ) {
           // イメージが添付されてる場合
           // if (
           //   !(body_json.image.length == void 0) &&
@@ -316,46 +323,38 @@ export const getServerSideProps: GetServerSideProps = withSession(
           // }
           // POSTメッセージに含まれるjpg/pngファイルが1つの場合のみ処理する
           if (image_obj.mime == "image/jpeg" || image_obj.mime == "image/png") {
-            if (
-              image_obj.originalFilename != void 0 &&
-              image_obj.originalFilename.length > 0
-            ) {
-              const rimage_stat = fs.statSync(body_json.image.path);
-              if (rimage_stat.size > 1048576) {
-                // ファイルサイズが大きすぎる
-                productAddCheckParam.is_toobig_image = true;
-              } else {
-                //#region ファイルコピー処理
-                // uploadファイルのパスを取得
-                const dbWorkDirectory = path.join(
-                  process.cwd(),
-                  uploadFilePath
-                );
-                const filename: string = image_obj.originalFilename;
-                const fullPath: string = path.join(dbWorkDirectory, filename);
+            const rimage_stat = fs.statSync(body_json.image.path);
+            if (rimage_stat.size > 1048576) {
+              // ファイルサイズが大きすぎる
+              productAddCheckParam.is_toobig_image = true;
+            } else {
+              //#region ファイルコピー処理
+              // uploadファイルのパスを取得
+              const dbWorkDirectory = path.join(process.cwd(), uploadFilePath);
+              const filename: string = image_obj.originalFilename;
+              const fullPath: string = path.join(dbWorkDirectory, filename);
 
-                let rs: ReadStream = null;
-                let ws: WriteStream = null;
-                try {
-                  rs = fs.createReadStream(body_json.image.path, {
-                    autoClose: true,
-                  });
-                  ws = fs.createWriteStream(fullPath, {
-                    autoClose: true,
-                    flags: "w",
-                  });
+              let rs: ReadStream = null;
+              let ws: WriteStream = null;
+              try {
+                rs = fs.createReadStream(body_json.image.path, {
+                  autoClose: true,
+                });
+                ws = fs.createWriteStream(fullPath, {
+                  autoClose: true,
+                  flags: "w",
+                });
 
-                  // ファイルコピー
-                  await transferImageFile(rs, ws);
+                // ファイルコピー
+                await transferImageFile(rs, ws);
 
-                  productAddCheckParam.image = image_obj.originalFilename;
-                  //#endregion ファイルコピー処理
-                } catch (e) {
-                  throw e;
-                } finally {
-                  rs.close();
-                  ws.close();
-                }
+                productAddCheckParam.image = image_obj.originalFilename;
+                //#endregion ファイルコピー処理
+              } catch (e) {
+                throw e;
+              } finally {
+                rs.close();
+                ws.close();
               }
             }
           } else {
@@ -369,6 +368,17 @@ export const getServerSideProps: GetServerSideProps = withSession(
         }
         //#endregion 画像ファイルを/public/uploadにコピーする
       }
+      //#region テンポラリファイル削除
+      if (
+        body_json.image.path != void 0 &&
+        body_json.image.path.length > 0
+      ) {
+        if (fs.existsSync(body_json.image.path)) {
+          fs.unlinkSync(body_json.image.path);
+        }
+      }
+      //#endregion テンポラリファイル削除
+
       return {
         props: productAddCheckParam,
       };

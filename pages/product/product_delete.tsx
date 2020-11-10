@@ -33,6 +33,7 @@ type ProductDeleteParam = {
   is_exception: boolean;
   product_code: string;
   product_name: string;
+  product_image: string;
 };
 
 const next_page: string = "/product/product_delete_done";
@@ -46,6 +47,7 @@ const redirect_page: string = "/product/product_list";
 const ProductEdit = (productDeleteParam: ProductDeleteParam) => {
   //#region 前画面からデータを受け取る
   const product_name = productDeleteParam.product_name;
+  const product_image = productDeleteParam.product_image;
   const router = useRouter();
   //#endregion 前画面からデータを受け取る
 
@@ -129,22 +131,23 @@ const ProductEdit = (productDeleteParam: ProductDeleteParam) => {
               この商品を削除してよろしいですか？
               <br />
               <br />
-              商品コード
+              <b>商品コード</b>
               <br />
               {/* <input type="hidden" name="code" value={productDeleteParam.product_code} /> */}
               <input
-                type="text"
+                type="hidden"
                 name="code"
                 width="200px"
                 readOnly
                 style={{ background: "#dddddd" }}
                 defaultValue={productDeleteParam.product_code}
               />
+              {productDeleteParam.product_code}
               <br />
-              商品名
+              <b>商品名</b>
               <br />
               <input
-                type="text"
+                type="hidden"
                 name="name"
                 width="200px"
                 readOnly
@@ -153,7 +156,25 @@ const ProductEdit = (productDeleteParam: ProductDeleteParam) => {
                 defaultValue={product_name}
                 //onChange={onChangeEvent}
               />
+              {product_name}
               <br />
+              <b>画像</b>
+              <br />
+              <input
+                type="hidden"
+                name="image"
+                width="200px"
+                readOnly
+                style={{ background: "#dddddd" }}
+                defaultValue={product_image}
+              />
+              {product_image == void 0 || product_image == "" ? (
+                <img src="/now_printing.png" />
+              ) : (
+                <p style={{ width: "150px", height: "150px" }}>
+                  <img width="100%" src={"/upload/" + product_image} />
+                </p>
+              )}
               <br />
               <input type="button" onClick={() => router.back()} value="戻る" />
               <input type="submit" value="OK" />
@@ -198,6 +219,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
       is_exception: false,
       product_code: "",
       product_name: "",
+      product_image: "",
     };
 
     const req = context.req;
@@ -247,13 +269,18 @@ export const getServerSideProps: GetServerSideProps = withSession(
           });
           //db.serialize();
 
-          const product: { name: string }[] = await db.all(
-            `SELECT name FROM mst_product WHERE code=${productcode}`
+          const product: {
+            name: string;
+            gazou: string;
+          }[] = await db.all(
+            `SELECT name,gazou FROM mst_product WHERE code=${productcode}`
           );
           // console.log(product);
           if (product.length == 1) {
             const product_name = product[0].name;
+            const product_image = product[0].gazou;
             productDeleteParam.product_name = htmlspecialchars(product_name);
+            productDeleteParam.product_image = htmlspecialchars(product_image);
           } else if (product.length < 1) {
             productDeleteParam.is_noexist_productcode = true;
           } else {

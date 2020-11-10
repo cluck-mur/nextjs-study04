@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { useState, ChangeEvent, useRef } from "react";
+import fs, { ReadStream, WriteStream } from "fs";
 
 /**
  * JSX形式のメッセージを生成する
@@ -45,3 +46,15 @@ export const CompReferer = (
   const compare_str = host + page_str;
   return referer_cuthttp[1].startsWith(compare_str);
 };
+
+/**
+ * イメージファイルコピー
+ * @param rs
+ * @param ws
+ */
+export const transferImageFile = async (rs: ReadStream, ws: WriteStream) => {
+  for await (const chunk of rs) {
+    await ws.write(chunk);
+  }
+};
+

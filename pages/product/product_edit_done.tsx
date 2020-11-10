@@ -12,6 +12,7 @@ import formUrlDecoded from "form-urldecoded";
 import htmlspecialchars from "htmlspecialchars";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
+import fs from "fs";
 import path from "path";
 import {
   dbFilePath,
@@ -21,7 +22,7 @@ import {
 } from "../../lib/global_const";
 import { CompReferer } from "../../lib/myUtils";
 import withSession from "../../lib/session";
-import { msgYouHaveNotLogin } from "../../lib/global_const";
+import { msgYouHaveNotLogin, uploadFilePath } from "../../lib/global_const";
 
 type ProductEditDoneParam = {
   login: string;
@@ -146,10 +147,16 @@ export const getServerSideProps: GetServerSideProps = withSession(
       const name = typeof body_json.name == "undefined" ? "" : body_json.name;
       const price =
         typeof body_json.price == "undefined" ? "" : body_json.price;
+      const image =
+        typeof body_json.image == "undefined" ? "" : body_json.image;
+      const image_old =
+        typeof body_json.image_old == "undefined" ? "" : body_json.image_old;
 
       const product_code = htmlspecialchars(code);
       const product_name = htmlspecialchars(name);
       const product_price = htmlspecialchars(price);
+      const product_image = htmlspecialchars(image);
+      const product_image_old = htmlspecialchars(image_old);
       //#endregion POSTメッセージからパラメータを取得する
 
       //#region DBへproductを修正
@@ -166,7 +173,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
           driver: sqlite3.Database,
         });
         //db.serialize();
-        const sql = `UPDATE mst_product SET name="${product_name}",price=${product_price} WHERE code=${product_code}`;
+        const sql = `UPDATE mst_product SET name="${product_name}",price=${product_price},gazou="${product_image}" WHERE code=${product_code}`;
         let stmt = await db.prepare(sql);
         try {
           await stmt.run();
@@ -174,6 +181,28 @@ export const getServerSideProps: GetServerSideProps = withSession(
           is_exception = true;
         } finally {
           await stmt.finalize();
+        }
+
+        if (
+          typeof product_image_old != void 0 &&
+          product_image_old.length > 0
+        ) {
+          const product: {
+            code: number;
+          }[] = await db.all(
+            // `SELECT code FROM mst_product WHERE gazou="${product_image_old}" AND code!=${product_code}`
+            `SELECT code FROM mst_product WHERE gazou="${product_image_old}"`
+          );
+          if (!(product.length > 0)) {
+            // ファイルを消去する
+            // uploadファイルのパスを取得
+            const dbWorkDirectory = path.join(process.cwd(), uploadFilePath);
+            const filename: string = product_image_old;
+            const fullPath: string = path.join(dbWorkDirectory, filename);
+            if (fs.existsSync(fullPath)) {
+              fs.unlinkSync(fullPath);
+            }
+          }
         }
       } catch (e) {
         is_exception = true;

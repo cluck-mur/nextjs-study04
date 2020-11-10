@@ -15,20 +15,28 @@ import {
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";
-import { CompReferer } from "../../lib/myUtils";
+import { CompReferer, transferImageFile } from "../../lib/myUtils";
 import withSession from "../../lib/session";
-import { msgYouHaveNotLogin } from "../../lib/global_const";
+import { msgYouHaveNotLogin, uploadFilePath } from "../../lib/global_const";
+import parse, { Body } from "then-busboy";
+import fs, { ReadStream, WriteStream } from "fs";
+import path from "path";
 
 type ProductEditCheckParam = {
   login: string;
   login_staff_code: string;
   login_staff_name: string;
   is_worng_price: boolean;
+  is_wrong_image_type: boolean;
+  // is_multi_mages: boolean;
+  is_toobig_image: boolean;
   is_exception: boolean;
   code: string | undefined;
   name: string | undefined;
   price: string | undefined;
   image: string | undefined;
+  image_old: string | undefined;
+  image_change: string | undefined;
 };
 
 const next_page: string = "/product/product_edit_done";
@@ -44,7 +52,12 @@ const ProductEditCheck = (productEditCheckParam: ProductEditCheckParam) => {
   const product_code = productEditCheckParam.code;
   const product_name = productEditCheckParam.name;
   let product_price = productEditCheckParam.price;
-  const product_image = productEditCheckParam.image;
+  let product_image = productEditCheckParam.image;
+  const product_image_old = productEditCheckParam.image_old;
+  const product_image_change = productEditCheckParam.image_change;
+  if (product_image_change == "no") {
+    product_image = product_image_old;
+  }
   //#endregion 前画面からデータを受け取る
 
   const items = [];
@@ -83,7 +96,7 @@ const ProductEditCheck = (productEditCheckParam: ProductEditCheckParam) => {
         name_str = "商品名が入力されていません";
       } else {
         // もし商品名が入力されていたら商品名を表示する
-        name_str = `商品名：${product_name}`;
+        name_str = `${product_name}`;
       }
       //#endregion 画面用データを設定
 
@@ -113,7 +126,13 @@ const ProductEditCheck = (productEditCheckParam: ProductEditCheckParam) => {
           ) : (
             <React.Fragment key="success"></React.Fragment>
           )}
+          <b>商品コード</b>
+          <br />
+          {product_code}
+          <br />
           {/* 商品名表示 */}
+          <b>商品名</b>
+          <br />
           <div>{name_str}</div>
           {/* 不正価格警告文表示 */}
           {productEditCheckParam.is_worng_price && (
@@ -124,13 +143,34 @@ const ProductEditCheck = (productEditCheckParam: ProductEditCheckParam) => {
           )}
           {can_move_next_page ? (
             <React.Fragment>
-              <div>価格：{product_price}円</div>
-              <div>画像：{product_image}</div>
+              <b>価格</b>
+              <br />
+              {product_price}円
+              <br />
+              <b>画像</b>
+              <br />
+              {product_image == void 0 || product_image == "" ? (
+                <img src="/now_printing.png" />
+              ) : (
+                <p style={{ width: "150px", height: "150px" }}>
+                  <img width="100%" src={"/upload/" + product_image} />
+                </p>
+              )}
               <form method="post" action={next_page}>
                 <input type="hidden" name="code" value={product_code} />
                 <input type="hidden" name="name" value={product_name} />
                 <input type="hidden" name="price" value={product_price} />
                 <input type="hidden" name="image" value={product_image} />
+                <input
+                  type="hidden"
+                  name="image_old"
+                  value={product_image_old}
+                />
+                <input
+                  type="hidden"
+                  name="imagechange"
+                  value={product_image_change}
+                />
                 {/* <br /> */}
                 {/* <input type="button" onClick={() => router.back()} value="戻る" /> */}
                 <input
@@ -178,11 +218,16 @@ export const getServerSideProps: GetServerSideProps = withSession(
       login_staff_code: "",
       login_staff_name: "",
       is_worng_price: false,
+      is_wrong_image_type: false,
+      // is_multi_mages: false,
+      is_toobig_image: false,
       is_exception: false,
       code: "",
       name: "",
       price: "",
       image: "",
+      image_old: "",
+      image_change: "",
     };
 
     const req = context.req;
@@ -202,31 +247,135 @@ export const getServerSideProps: GetServerSideProps = withSession(
       }
 
       //#region POSTメッセージからパラメータを取得する
-      const body = await getRawBody(context.req);
-      const body_string = body.toString();
-      const body_json = formUrlDecoded(body_string);
-      //console.log(body_json)
+      const body: Body = await parse(req);
+      const body_json = body.json();
+      //console.log(body_json);
 
-      const code = typeof body_json.code == "undefined" ? "" : body_json.code;
-      const name = typeof body_json.name == "undefined" ? "" : body_json.name;
+      const code =
+        typeof body_json.code == void 0 || body_json.code == 0
+          ? ""
+          : body_json.code;
+      const name =
+        typeof body_json.name == void 0 || body_json.name == 0
+          ? ""
+          : body_json.name;
       const price =
-        typeof body_json.price == "undefined" ? "" : body_json.price;
-      const image =
-        typeof body_json.image == "undefined" ? "" : body_json.price;
+        typeof body_json.price == void 0 || body_json.price == 0
+          ? ""
+          : body_json.price;
+      // const image =
+      //   typeof body_json.image == void 0 || body_json.image == 0
+      //     ? ""
+      //     : body_json.image;
+      const image_old =
+        typeof body_json.image_old == void 0 || body_json.image_old == 0
+          ? ""
+          : body_json.image_old;
+      const image_change =
+        typeof body_json.imagechange == void 0 || body_json.imagechange == 0
+          ? "no"
+          : body_json.imagechange;
       //console.log(product_edit_param);
 
       productEditCheckParam.code = htmlspecialchars(code);
       productEditCheckParam.name = htmlspecialchars(name);
       productEditCheckParam.price = htmlspecialchars(price);
-      productEditCheckParam.image = htmlspecialchars(image);
+      productEditCheckParam.image_old = htmlspecialchars(image_old);
+      productEditCheckParam.image_change = htmlspecialchars(image_change);
       //#endregion POSTメッセージからパラメータを取得する
 
       //const match_result = productEditCheckParam.price.match(/^[^0-9]+/);
       const match_result = productEditCheckParam.price.match(/^[0-9]+$/);
+      const price_int = parseInt(productEditCheckParam.price, 10);
       //console.log(match_result);
-      if (match_result == null) {
+      if (
+        match_result == null ||
+        isNaN(price_int) ||
+        price_int == void 0 ||
+        price_int <= 0
+      ) {
         productEditCheckParam.is_worng_price = true;
+      } else {
+        //#region 画像ファイルを/public/uploadにコピーする
+        if (productEditCheckParam.image_change == "yes") {
+          if (
+            body_json.image.originalFilename != void 0 &&
+            body_json.image.originalFilename.length > 0
+          ) {
+            // イメージが添付されてる場合
+            // if (
+            //   !(body_json.image.length == void 0) &&
+            //   body_json.image.length == 1
+            // ) {
+            let image_obj = body_json.image;
+            // if (!(body_json.image.length == void 0)) {
+            //   image_obj = body_json.image[0];
+            // }
+            // POSTメッセージに含まれるjpg/pngファイルが1つの場合のみ処理する
+            if (
+              image_obj.mime == "image/jpeg" ||
+              image_obj.mime == "image/png"
+            ) {
+              const rimage_stat = fs.statSync(body_json.image.path);
+              if (rimage_stat.size > 1048576) {
+                // ファイルサイズが大きすぎる
+                productEditCheckParam.is_toobig_image = true;
+              } else {
+                //#region ファイルコピー処理
+                // uploadファイルのパスを取得
+                const dbWorkDirectory = path.join(
+                  process.cwd(),
+                  uploadFilePath
+                );
+                const filename: string = image_obj.originalFilename;
+                const fullPath: string = path.join(dbWorkDirectory, filename);
+
+                let rs: ReadStream = null;
+                let ws: WriteStream = null;
+                try {
+                  rs = fs.createReadStream(body_json.image.path, {
+                    autoClose: true,
+                  });
+                  ws = fs.createWriteStream(fullPath, {
+                    autoClose: true,
+                    flags: "w",
+                  });
+
+                  // ファイルコピー
+                  await transferImageFile(rs, ws);
+
+                  productEditCheckParam.image = image_obj.originalFilename;
+                  //#endregion ファイルコピー処理
+                } catch (e) {
+                  throw e;
+                } finally {
+                  rs.close();
+                  ws.close();
+                }
+              }
+            } else {
+              // イメージタイプがエラー
+              productEditCheckParam.is_wrong_image_type = true;
+            }
+            // } else {
+            //   // 複数のイメージファイルが添付されている。
+            //   productAddCheckParam.is_multi_mages = true;
+            // }
+          }
+        }
+        //#endregion 画像ファイルを/public/uploadにコピーする
       }
+      //#region テンポラリファイル削除
+      // if (
+      //   body_json.image.path != void 0 &&
+      //   body_json.image.path.length > 0
+      // ) {
+      //   if (fs.existsSync(body_json.image.path)) {
+      //     fs.unlinkSync(body_json.image.path);
+      //   }
+      // }
+      //#endregion テンポラリファイル削除
+
       return {
         props: productEditCheckParam,
       };

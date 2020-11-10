@@ -21,7 +21,8 @@ import {
 } from "../../lib/global_const";
 import { CompReferer } from "../../lib/myUtils";
 import withSession from "../../lib/session";
-import { msgYouHaveNotLogin } from "../../lib/global_const";
+import fs from "fs";
+import { msgYouHaveNotLogin, uploadFilePath } from "../../lib/global_const";
 
 type ProductDeleteDoneParam = {
   is_exception: boolean;
@@ -139,12 +140,15 @@ export const getServerSideProps: GetServerSideProps = withSession(
       const body_string = body.toString();
       const body_json = formUrlDecoded(body_string);
 
+      //#region 前画面からデータを受け取る
       const code = typeof body_json.code == "undefined" ? "" : body_json.code;
       const name = typeof body_json.name == "undefined" ? "" : body_json.name;
+      const image =
+        typeof body_json.image == "undefined" ? "" : body_json.image;
 
-      //#region 前画面からデータを受け取る
       const product_code = htmlspecialchars(code);
       const product_name = htmlspecialchars(name);
+      const product_image = htmlspecialchars(image);
       //#endregion 前画面からデータを受け取る
 
       //#region DBへproductを追加
@@ -169,6 +173,25 @@ export const getServerSideProps: GetServerSideProps = withSession(
           is_exception = true;
         } finally {
           await stmt.finalize();
+        }
+
+        if (typeof product_image != void 0 && product_image.length > 0) {
+          const product: {
+            code: number;
+          }[] = await db.all(
+            // `SELECT code FROM mst_product WHERE gazou="${product_image_old}" AND code!=${product_code}`
+            `SELECT code FROM mst_product WHERE gazou="${product_image}"`
+          );
+          if (!(product.length > 0)) {
+            // ファイルを消去する
+            // uploadファイルのパスを取得
+            const dbWorkDirectory = path.join(process.cwd(), uploadFilePath);
+            const filename: string = product_image;
+            const fullPath: string = path.join(dbWorkDirectory, filename);
+            if (fs.existsSync(fullPath)) {
+              fs.unlinkSync(fullPath);
+            }
+          }
         }
       } catch (e) {
         is_exception = true;

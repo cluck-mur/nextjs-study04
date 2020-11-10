@@ -128,21 +128,21 @@ const ProductDisp = (productDispParam: ProductDispParam) => {
         {productDispParam.product_code}
         <br /> */}
             {/* <form method="post" action={next_page}> */}
-            商品コード
+            <b>商品コード</b>
             <br />
-            {/* <input type="hidden" name="code" value={productDispParam.product_code} /> */}
-            <input
+            {/* <input
               type="text"
               name="code"
               width="200px"
               readOnly
               style={{ background: "#dddddd" }}
               defaultValue={productDispParam.product_code}
-            />
+            /> */}
+            {productDispParam.product_code}
             <br />
-            商品名
+            <b>商品名</b>
             <br />
-            <input
+            {/* <input
               type="text"
               name="name"
               width="200px"
@@ -151,11 +151,12 @@ const ProductDisp = (productDispParam: ProductDispParam) => {
               maxLength={productNameMaxLegth}
               defaultValue={product_name}
               //onChange={onChangeEvent}
-            />
+            /> */}
+            {product_name}
             <br />
-            価格
+            <b>価格</b>
             <br />
-            <input
+            {/* <input
               type="text"
               name="name"
               width="200px"
@@ -164,8 +165,29 @@ const ProductDisp = (productDispParam: ProductDispParam) => {
               // maxLength={productNameMaxLegth}
               defaultValue={product_price}
               //onChange={onChangeEvent}
-            />
+            /> */}
+            {product_price}
             円
+            <br />
+            <b>画像</b>
+            <br />
+            {/* <input
+              type="text"
+              name="name"
+              width="200px"
+              readOnly
+              style={{ background: "#dddddd" }}
+              // maxLength={productNameMaxLegth}
+              defaultValue={product_price}
+              //onChange={onChangeEvent}
+            /> */}
+            {product_image == void 0 || product_image == "" ? (
+              <img src="/now_printing.png" />
+            ) : (
+              <p style={{ width: "150px", height: "150px" }}>
+                <img width="100%" src={"/upload/" + product_image} />
+              </p>
+            )}
             <br />
             <br />
             <input type="button" onClick={() => router.back()} value="戻る" />
@@ -265,7 +287,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
           const product: {
             name: string;
             price: string;
-            image: string;
+            gazou: string;
           }[] = await db.all(
             `SELECT name,price,gazou FROM mst_product WHERE code=${productcode}`
           );
@@ -276,7 +298,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
             const product_price =
               product[0].price == "undefined" ? "" : product[0].price;
             const product_image =
-              product[0].image == "undefined" ? "" : product[0].image;
+              product[0].gazou == "undefined" ? "" : product[0].gazou;
             productDispParam.product_name = htmlspecialchars(product_name);
             productDispParam.product_price = htmlspecialchars(product_price);
             productDispParam.product_image = htmlspecialchars(product_image);

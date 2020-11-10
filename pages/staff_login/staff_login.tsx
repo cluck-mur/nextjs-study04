@@ -22,11 +22,11 @@ const StaffLogin = ({}) => {
   items.push(
     <React.Fragment key="main">
       <form method="post" action="staff_login_check">
-        スタッフコード
+        <b>スタッフコード</b>
         <br />
         <input type="text" name="code" />
         <br />
-        パスワード
+        <b>パスワード</b>
         <br />
         <input type="password" name="pass" />
         <br />

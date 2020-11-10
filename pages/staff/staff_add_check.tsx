@@ -82,7 +82,7 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
         name_str = "スタッフ名が入力されていません";
       } else {
         // もしスタッフ名が入力されていたらスタッフ名を表示する
-        name_str = `スタッフ名：${staff_name}`;
+        name_str = `${staff_name}`;
       }
 
       if (staff_pass == "") {
@@ -122,17 +122,23 @@ const StaffAddCheck = (staffAddCheckParam: StaffAddCheckParam) => {
             <React.Fragment key="success"></React.Fragment>
           )}
           {/* スタッフ名表示 */}
-          <div>{name_str}</div>
+          <div>
+            <b>スタッフ名</b>
+            <br />
+            {name_str}
+            <br />
+            <br />
+          </div>
           {/* パスワード未入力警告文表示 */}
           {pass_display_flg && (
-            <div>
+            <div style={{ color: "red" }}>
               パスワードが入力されていません
               <br />
             </div>
           )}
           {/* パスワード不一致警告文表示 */}
           {pass2_display_flg && (
-            <div>
+            <div style={{ color: "red" }}>
               パスワードが一致しません
               <br />
             </div>
@@ -225,7 +231,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
         context.res.end();
       }
     }
-    
+
     return {
       props: staffAddCheckParam,
     };

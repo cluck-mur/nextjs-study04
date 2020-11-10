@@ -74,6 +74,7 @@ const StaffDeleteDone = (staffDeleteDoneParam: StaffDeleteDoneParam) => {
         <React.Fragment>
           {staffDeleteDoneParam.staff_name} さんを削除しました。
           <br />
+          <br />
           <input
             type="button"
             onClick={() => {

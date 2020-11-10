@@ -55,7 +55,7 @@ const StaffAdd = (staffAddParam: StaffAddParam) => {
         <br />
         <br />
         <form method="post" action="staff_add_check">
-          スタッフ名を入力してください。
+          <b>スタッフ名を入力してください。</b>
           <br />
           <input
             type="text"
@@ -65,11 +65,11 @@ const StaffAdd = (staffAddParam: StaffAddParam) => {
           />{" "}
           最大14文字
           <br />
-          パスワードを入力してください。
+          <b>パスワードを入力してください。</b>
           <br />
           <input type="password" name="pass" width="100px" />
           <br />
-          パスワードをもう一度入力してください。
+          <b>パスワードをもう一度入力してください。</b>
           <br />
           <input type="password" name="pass2" width="100px" />
           <br />

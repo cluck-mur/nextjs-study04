@@ -74,6 +74,7 @@ const StaffEditDone = (staffEditDoneParam: StaffEditDoneParam) => {
         <React.Fragment>
           {staffEditDoneParam.staff_name} さんを修正しました。
           <br />
+          <br />
           <input
             type="button"
             onClick={() => {

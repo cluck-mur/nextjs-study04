@@ -27,6 +27,7 @@ type StaffListParam = {
   staffs: {
     name: string;
     code: number;
+    is_master: boolean;
   }[];
 };
 
@@ -45,6 +46,9 @@ const GenSelectStaffFormChildren = (staffListParam: StaffListParam) => {
       <React.Fragment key={staff.code.toString()}>
         <input type="radio" name="staffcode" value={staff.code} />
         {staff.code}: {staff.name}
+        {staff.is_master == true && (
+          "(マスター管理者)"
+        )}
         <br />
       </React.Fragment>
     );
@@ -173,7 +177,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
       });
       //db.serialize();
 
-      const staffs = await db.all("SELECT code,name FROM mst_staff WHERE 1");
+      const staffs = await db.all("SELECT code,name,is_master FROM mst_staff WHERE 1");
       staffs.map((staff) => {
         staffListParam.staffs.push(staff);
       });

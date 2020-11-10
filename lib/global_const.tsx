@@ -11,45 +11,61 @@ export const productImageMaxLegth: number = 30;
 
 export const msgElementHttpReqError = (
   <React.Fragment key="http_request_error">
-    原因不明のエラーが発生しました。
-    <br />
-    申し訳ありませんがもう一度やり直してください。
+    <div style={{ color: "red" }}>
+      原因不明のエラーが発生しました。
+      <br />
+      申し訳ありませんがもう一度やり直してください。
+    </div>
   </React.Fragment>
 );
 
 export const msgElementSystemError = (
   <React.Fragment key="system_error">
-    ただいま障害により大変ご迷惑をお掛けしております。
+    <div style={{ color: "red" }}>
+      ただいま障害により大変ご迷惑をお掛けしております。
+    </div>
   </React.Fragment>
 );
 
 export const msgElementStaffWasNotSelected = (
-  <React.Fragment>スタッフが選択されていません。</React.Fragment>
+  <React.Fragment>
+    <div style={{ color: "red" }}>スタッフが選択されていません。</div>
+  </React.Fragment>
 );
 
 export const msgElementStaffWasNotExisted = (
-  <React.Fragment>指定されたスタッフは存在しません。</React.Fragment>
+  <React.Fragment>
+    <div style={{ color: "red" }}>指定されたスタッフは存在しません。</div>
+  </React.Fragment>
 );
 
 export const msgElementStaffWasMultipleExisted = (
-  <React.Fragment>指定されたスタッフが複数存在します。</React.Fragment>
+  <React.Fragment>
+    <div style={{ color: "red" }}>指定されたスタッフが複数存在します。</div>
+  </React.Fragment>
 );
 
 export const msgElementProductWasNotSelected = (
-  <React.Fragment>商品が選択されていません。</React.Fragment>
+  <React.Fragment>
+    <div style={{ color: "red" }}>商品が選択されていません。</div>
+  </React.Fragment>
 );
 
 export const msgElementProductWasNotExisted = (
-  <React.Fragment>指定された商品は存在しません。</React.Fragment>
+  <React.Fragment>
+    <div style={{ color: "red" }}>指定された商品は存在しません。</div>
+  </React.Fragment>
 );
 
 export const msgElementProductWasMultipleExisted = (
-  <React.Fragment>指定された商品が複数存在します。</React.Fragment>
+  <React.Fragment>
+    <div style={{ color: "red" }}>指定された商品が複数存在します。</div>
+  </React.Fragment>
 );
 
 export const msgYouHaveNotLogin = (
   <React.Fragment key="have_not_login">
-    ログインしていません。
+    <div style={{ color: "red" }}>ログインしていません。</div>
     <br />
     <Link href="/staff_login/staff_login">
       <a>ログイン画面へ</a>

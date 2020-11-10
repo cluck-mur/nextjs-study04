@@ -33,6 +33,7 @@ type StaffDeleteParam = {
   is_exception: boolean;
   staff_code: string;
   staff_name: string;
+  is_master: boolean;
 };
 
 const next_page: string = "/staff/staff_delete_done";
@@ -92,7 +93,10 @@ const StaffEdit = (staffDeleteParam: StaffDeleteParam) => {
         items.push(
           <React.Fragment>
             <br />
-            スタッフコード: {staffDeleteParam.staff_code}
+            <b>スタッフコード</b>
+            <br />
+            {staffDeleteParam.staff_code}
+            <br />
             <br />
             <input
               type="button"
@@ -106,7 +110,10 @@ const StaffEdit = (staffDeleteParam: StaffDeleteParam) => {
         items.push(
           <React.Fragment>
             <br />
-            スタッフコード: {staffDeleteParam.staff_code}
+            <b>スタッフコード</b>
+            <br />
+            {staffDeleteParam.staff_code}
+            <br />
             <br />
             <input
               type="button"
@@ -115,6 +122,23 @@ const StaffEdit = (staffDeleteParam: StaffDeleteParam) => {
             />
           </React.Fragment>
         );
+      } else if (staffDeleteParam.is_master) {
+        // マスター管理者だったら
+        items.push(          <React.Fragment>
+          <div style={{color: "red"}}>マスター管理者を削除することはできません。</div>
+          <br />
+          <b>スタッフコード</b>
+          <br />
+          {staffDeleteParam.staff_code}
+          <br />
+          <br />
+          <input
+            type="button"
+            onClick={() => router.push(redirect_page)}
+            value="戻る"
+          />
+        </React.Fragment>
+)
       } else {
         items.push(
           <React.Fragment>
@@ -122,29 +146,30 @@ const StaffEdit = (staffDeleteParam: StaffDeleteParam) => {
             <br />
             <br />
             {/* スタッフコード
-        <br />
-        {staffDeleteParam.staff_code}
-        <br /> */}
+            <br />
+            {staffDeleteParam.staff_code}
+            <br /> */}
             <form method="post" action={next_page}>
               このスタッフを削除してよろしいですか？
               <br />
               <br />
-              スタッフコード
+              <b>スタッフコード</b>
               <br />
               {/* <input type="hidden" name="code" value={staffDeleteParam.staff_code} /> */}
               <input
-                type="text"
+                type="hidden"
                 name="code"
                 width="200px"
                 readOnly
                 style={{ background: "#dddddd" }}
                 defaultValue={staffDeleteParam.staff_code}
               />
+              {staffDeleteParam.staff_code}
               <br />
-              スタッフ名
+              <b>スタッフ名</b>
               <br />
               <input
-                type="text"
+                type="hidden"
                 name="name"
                 width="200px"
                 readOnly
@@ -153,6 +178,7 @@ const StaffEdit = (staffDeleteParam: StaffDeleteParam) => {
                 defaultValue={staff_name}
                 //onChange={onChangeEvent}
               />
+              {staff_name}
               <br />
               <br />
               <input type="button" onClick={() => router.back()} value="戻る" />
@@ -197,6 +223,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
       is_exception: false,
       staff_code: "",
       staff_name: "",
+      is_master: false,
     };
 
     const req = context.req;
@@ -246,13 +273,17 @@ export const getServerSideProps: GetServerSideProps = withSession(
           });
           //db.serialize();
 
-          const staff: { name: string }[] = await db.all(
-            `SELECT name FROM mst_staff WHERE code=${staffcode}`
+          const staff: {
+            name: string;
+            is_master: boolean;
+          }[] = await db.all(
+            `SELECT name,is_master FROM mst_staff WHERE code=${staffcode}`
           );
           // console.log(staff);
           if (staff.length == 1) {
             const staff_name = staff[0].name;
             staffDeleteParam.staff_name = htmlspecialchars(staff_name);
+            staffDeleteParam.is_master = staff[0].is_master;
           } else if (staff.length < 1) {
             staffDeleteParam.is_noexist_staffcode = true;
           } else {

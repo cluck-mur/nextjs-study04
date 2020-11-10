@@ -72,6 +72,7 @@ const StaffAddDone = (staffAddDoneParam: StaffAddDoneParam) => {
         <React.Fragment key="success">
           {staffAddDoneParam.staff_name} さんを追加しました。
           <br />
+          <br />
           <input
             type="button"
             onClick={() => {
@@ -157,7 +158,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
           driver: sqlite3.Database,
         });
         //db.serialize();
-        const sql = `INSERT INTO mst_staff(name,password) VALUES ("${staff_name}","${staff_pass}")`;
+        const sql = `INSERT INTO mst_staff(name,password,is_master) VALUES ("${staff_name}","${staff_pass}",0)`;
         let stmt = await db.prepare(sql);
         try {
           await stmt.run();

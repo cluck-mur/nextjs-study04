@@ -84,7 +84,7 @@ const StaffEditCheck = (staffEditCheckParam: StaffEditCheckParam) => {
         name_str = "スタッフ名が入力されていません";
       } else {
         // もしスタッフ名が入力されていたらスタッフ名を表示する
-        name_str = `スタッフ名：${staff_name}`;
+        name_str = `${staff_name}`;
       }
 
       if (staff_pass == "") {
@@ -128,19 +128,30 @@ const StaffEditCheck = (staffEditCheckParam: StaffEditCheckParam) => {
             <React.Fragment></React.Fragment>
           )}
           {/* スタッフコード表示 */}
-          <div>コード : {staff_code}</div>
+          <div>
+            <b>コード</b>
+            <br />
+            {staff_code}
+            <br />
+          </div>
           {/* スタッフ名表示 */}
-          <div>{name_str}</div>
+          <div>
+            <b>スタッフ名</b>
+            <br />
+            {name_str}
+            <br />
+            <br />
+          </div>
           {/* パスワード未入力警告文表示 */}
           {pass_display_flg && (
-            <div>
+            <div style={{color: "red"}}>
               パスワードが入力されていません
               <br />
             </div>
           )}
           {/* パスワード不一致警告文表示 */}
           {pass2_display_flg && (
-            <div>
+            <div style={{color: "red"}}>
               パスワードが一致しません
               <br />
             </div>
@@ -150,7 +161,7 @@ const StaffEditCheck = (staffEditCheckParam: StaffEditCheckParam) => {
               <input type="hidden" name="code" value={staff_code} />
               <input type="hidden" name="name" value={staff_name} />
               <input type="hidden" name="pass" value={staff_pass} />
-              <br />
+              {/* <br /> */}
               <input
                 type="button"
                 onClick={() => router.push("staff_list")}

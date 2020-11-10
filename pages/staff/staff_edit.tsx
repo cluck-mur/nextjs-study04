@@ -93,7 +93,9 @@ const StaffEdit = (staffEditParam: StaffEditParam) => {
         items.push(
           <React.Fragment>
             <br />
-          スタッフコード: {staffEditParam.staff_code}
+            <b>スタッフコード</b>
+            <br />
+            {staffEditParam.staff_code}
             <br />
             <input
               type="button"
@@ -107,7 +109,9 @@ const StaffEdit = (staffEditParam: StaffEditParam) => {
         items.push(
           <React.Fragment>
             <br />
-          スタッフコード: {staffEditParam.staff_code}
+            <b>スタッフコード</b>
+            <br />
+            {staffEditParam.staff_code}
             <br />
             <input
               type="button"
@@ -119,44 +123,45 @@ const StaffEdit = (staffEditParam: StaffEditParam) => {
       } else {
         items.push(
           <React.Fragment>
-            ※スタッフの名前とパスワードを変更します。
-          <br />
+            ※スタッフの名前、パスワードを変更します。
+            <br />
             <br />
             {/* スタッフコード
         <br />
         {staffEditParam.staff_code}
         <br /> */}
             <form method="post" action={next_page}>
-              スタッフコード
-            <br />
+              <b>スタッフコード</b>
+              <br />
               {/* <input type="hidden" name="code" value={staffEditParam.staff_code} /> */}
               <input
-                type="text"
+                type="hidden"
                 name="code"
                 width="200px"
                 readOnly
                 style={{ background: "#dddddd" }}
                 defaultValue={staffEditParam.staff_code}
               />
+              {staffEditParam.staff_code}
               <br />
-            スタッフ名
-            <br />
+              <b>スタッフ名</b>
+              <br />
               <input
                 type="text"
                 name="name"
                 width="200px"
                 maxLength={staffNameMaxLegth}
                 defaultValue={staff_name}
-              //onChange={onChangeEvent}
-              />{" "}
-            最大14文字
-            <br />
-            パスワードを入力してください。
-            <br />
+                //onChange={onChangeEvent}
+              />
+              最大14文字
+              <br />
+              <b>パスワードを入力してください。</b>
+              <br />
               <input type="password" name="pass" width="100px" />
               <br />
-            パスワードをもう一度入力してください。
-            <br />
+              <b>パスワードをもう一度入力してください。</b>
+              <br />
               <input type="password" name="pass2" width="100px" />
               <br />
               <br />
@@ -199,7 +204,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
       login: null,
       login_staff_code: "",
       login_staff_name: "",
-        is_null_staffcode: false,
+      is_null_staffcode: false,
       is_noexist_staffcode: false,
       is_multipleexist_staffcode: false,
       is_exception: false,

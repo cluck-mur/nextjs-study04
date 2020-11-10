@@ -153,7 +153,7 @@ const ProductEdit = (productEditParam: ProductEditParam) => {
                 defaultValue={product_name}
                 //onChange={onChangeEvent}
               />
-              最大14文字
+              最大30文字
               <br />
               <b>価格</b>
               <br />

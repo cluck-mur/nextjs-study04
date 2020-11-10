@@ -124,21 +124,22 @@ const StaffDisp = (staffDispParam: StaffDispParam) => {
         {staffDispParam.staff_code}
         <br /> */}
             {/* <form method="post" action={next_page}> */}
-            スタッフコード
+            <b>スタッフコード</b>
             <br />
             {/* <input type="hidden" name="code" value={staffDispParam.staff_code} /> */}
-            <input
+            {/* <input
               type="text"
               name="code"
               width="200px"
               readOnly
               style={{ background: "#dddddd" }}
               defaultValue={staffDispParam.staff_code}
-            />
+            /> */}
+            {staffDispParam.staff_code}
             <br />
-            スタッフ名
+            <b>スタッフ名</b>
             <br />
-            <input
+            {/* <input
               type="text"
               name="name"
               width="200px"
@@ -147,7 +148,8 @@ const StaffDisp = (staffDispParam: StaffDispParam) => {
               maxLength={staffNameMaxLegth}
               defaultValue={staff_name}
               //onChange={onChangeEvent}
-            />
+            /> */}
+            {staff_name}
             <br />
             <br />
             <input type="button" onClick={() => router.back()} value="戻る" />

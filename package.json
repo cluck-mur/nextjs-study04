@@ -8,12 +8,10 @@
     "start": "next start"
   },
   "dependencies": {
-    "form-urldecoded": "^0.1.3",
     "htmlspecialchars": "^1.0.5",
     "md5": "^2.3.0",
     "next": "10.0.0",
     "next-iron-session": "^4.1.10",
-    "raw-body": "^2.4.1",
     "react": "17.0.1",
     "react-dom": "17.0.1",
     "sqlite": "^4.0.15",

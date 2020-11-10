@@ -7,8 +7,6 @@ import React from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
-import getRawBody from "raw-body";
-import formUrlDecoded from "form-urldecoded";
 import htmlspecialchars from "htmlspecialchars";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
@@ -20,6 +18,7 @@ import {
   msgElementSystemError,
 } from "../../lib/global_const";
 import { CompReferer } from "../../lib/myUtils";
+import { myParse, sanitizeFields } from "../../lib/myUtils";
 import withSession from "../../lib/session";
 import { msgYouHaveNotLogin } from "../../lib/global_const";
 
@@ -137,25 +136,28 @@ export const getServerSideProps: GetServerSideProps = withSession(
       }
 
       //#region POSTメッセージからパラメータを取得する
-      const body = await getRawBody(context.req);
-      const body_string = body.toString();
-      const body_json = formUrlDecoded(body_string);
+      const body = await myParse(req);
+      const body_json = body.json();
+      const fields_json = sanitizeFields(body);
 
-      const name = typeof body_json.name == "undefined" ? "" : body_json.name;
-      const price =
-        typeof body_json.price == "undefined" ? "" : body_json.price;
-      const image =
-        typeof body_json.image == "undefined" ? "" : body_json.image;
+      productAddDoneParam.product_name =
+        typeof fields_json.name == "undefined" ? "" : fields_json.name;
+      productAddDoneParam.product_price =
+        typeof fields_json.price == "undefined" ? "" : fields_json.price;
+      productAddDoneParam.product_image =
+        typeof fields_json.image == "undefined" ? "" : fields_json.image;
       const image_old =
-        typeof body_json.image_old == "undefined" ? "" : body_json.image_old;
-      const image_change =
-        typeof body_json.imagechange == "undefined"
+        typeof fields_json.image_old == "undefined"
           ? ""
-          : body_json.imagechange;
+          : fields_json.image_old;
+      const image_change =
+        typeof fields_json.imagechange == "undefined"
+          ? ""
+          : fields_json.imagechange;
 
-      const product_name = htmlspecialchars(name);
-      const product_price = htmlspecialchars(price);
-      const product_image = htmlspecialchars(image);
+      const product_name = productAddDoneParam.product_name;
+      const product_price = productAddDoneParam.product_price;
+      const product_image = productAddDoneParam.product_image;
       //#endregion POSTメッセージからパラメータを取得する
 
       //#region DBへproductを追加
@@ -189,9 +191,6 @@ export const getServerSideProps: GetServerSideProps = withSession(
       //#endregion DBへproductを追加
 
       productAddDoneParam.is_exception = is_exception;
-      productAddDoneParam.product_name = product_name;
-      productAddDoneParam.product_price = product_price;
-      productAddDoneParam.product_image = product_image;
       //console.log(product_add_param);
 
       return {

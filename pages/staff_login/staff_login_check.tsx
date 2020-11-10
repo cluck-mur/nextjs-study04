@@ -7,8 +7,6 @@ import React from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
-import getRawBody from "raw-body";
-import formUrlDecoded from "form-urldecoded";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import path from "path";
@@ -26,6 +24,7 @@ import {
   msgElementStaffWasMultipleExisted,
 } from "../../lib/global_const";
 import { CompReferer } from "../../lib/myUtils";
+import { myParse, sanitizeFields } from "../../lib/myUtils";
 import { Session } from "inspector";
 
 type StaffLoginCheckParam = {
@@ -165,17 +164,17 @@ export const getServerSideProps: GetServerSideProps = withSession(
 
     if (req.method == "POST" && refcomp_result) {
       //#region POSTメッセージからパラメータを取得する
-      const body = await getRawBody(req);
-      const body_string = body.toString();
-      const body_json = formUrlDecoded(body_string);
+      const body = await myParse(req);
+      //const body_json = body.json();
+      const fields_json = sanitizeFields(body);
       //console.log(body_json)
 
-      const code = typeof body_json.code == "undefined" ? "" : body_json.code;
-      const pass = typeof body_json.pass == "undefined" ? "" : body_json.pass;
+      const code = typeof fields_json.code == "undefined" ? "" : fields_json.code;
+      const pass = typeof fields_json.pass == "undefined" ? "" : fields_json.pass;
       //console.log(staff_add_param);
 
-      staffLoginCheckParam.code = htmlspecialchars(code);
-      staffLoginCheckParam.pass = htmlspecialchars(pass);
+      staffLoginCheckParam.code = code;
+      staffLoginCheckParam.pass = pass;
       //#endregion POSTメッセージからパラメータを取得する
 
       if (staffLoginCheckParam.code != "" && staffLoginCheckParam.pass != "") {

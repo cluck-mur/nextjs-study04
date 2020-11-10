@@ -7,8 +7,6 @@ import React from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
-import getRawBody from "raw-body";
-import formUrlDecoded from "form-urldecoded";
 import htmlspecialchars from "htmlspecialchars";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
@@ -20,6 +18,7 @@ import {
   msgElementSystemError,
 } from "../../lib/global_const";
 import { CompReferer } from "../../lib/myUtils";
+import { myParse, sanitizeFields } from "../../lib/myUtils";
 import withSession from "../../lib/session";
 import { msgYouHaveNotLogin } from "../../lib/global_const";
 
@@ -136,18 +135,18 @@ export const getServerSideProps: GetServerSideProps = withSession(
         return { props: staffEditDoneParam };
       }
 
-      const body = await getRawBody(context.req);
-      const body_string = body.toString();
-      const body_json = formUrlDecoded(body_string);
+      const body = await myParse(req);
+      //const body_json = body.json();
+      const fields_json = sanitizeFields(body);
 
-      const code = typeof body_json.code == "undefined" ? "" : body_json.code;
-      const name = typeof body_json.name == "undefined" ? "" : body_json.name;
-      const pass = typeof body_json.pass == "undefined" ? "" : body_json.pass;
+      const code = typeof fields_json.code == "undefined" ? "" : fields_json.code;
+      const name = typeof fields_json.name == "undefined" ? "" : fields_json.name;
+      const pass = typeof fields_json.pass == "undefined" ? "" : fields_json.pass;
 
       //#region 前画面からデータを受け取る
-      const staff_code = htmlspecialchars(code);
-      const staff_name = htmlspecialchars(name);
-      const staff_pass = htmlspecialchars(pass);
+      const staff_code = code;
+      const staff_name = name;
+      const staff_pass = pass;
       //#endregion 前画面からデータを受け取る
 
       //#region DBへstaffを追加

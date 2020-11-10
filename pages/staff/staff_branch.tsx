@@ -10,8 +10,6 @@ import { useRouter } from "next/router";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import path from "path";
-import getRawBody from "raw-body";
-import formUrlDecoded from "form-urldecoded";
 import htmlspecialchars from "htmlspecialchars";
 import {
   dbFilePath,
@@ -20,6 +18,7 @@ import {
   msgElementSystemError,
 } from "../../lib/global_const";
 import { CompReferer } from "../../lib/myUtils";
+import { myParse, sanitizeFields } from "../../lib/myUtils";
 
 type StaffBranchParam = {
   is_exception: boolean;
@@ -55,36 +54,47 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   );
   //#endregion refererチェック
 
+  const req = context.req;
+
   if (context.req.method == "POST" && refcomp_result) {
-    const body = await getRawBody(context.req);
-    const body_string = body.toString();
-    const body_json = formUrlDecoded(body_string);
+    const body = await myParse(req);
+    //const body_json = body.json();
+    const fields_json = sanitizeFields(body);
     //console.log(body_json);
 
-    const staffcode = typeof body_json.staffcode == "undefined" ? null : body_json.staffcode;
+    const staffcode =
+      typeof fields_json.staffcode == "undefined"
+        ? null
+        : fields_json.staffcode;
 
     //#region ページ分岐
-    if (body_json.add != undefined) {
+    if (fields_json.add != undefined) {
       if (context.res) {
         context.res.writeHead(303, { Location: next_page_add });
         context.res.end();
       }
     }
-    if (body_json.disp != undefined) {
+    if (fields_json.disp != undefined) {
       if (context.res) {
-        context.res.writeHead(303, { Location: next_page_disp + `?staffcode=${staffcode}` });
+        context.res.writeHead(303, {
+          Location: next_page_disp + `?staffcode=${staffcode}`,
+        });
         context.res.end();
       }
     }
-    if (body_json.edit != undefined) {
+    if (fields_json.edit != undefined) {
       if (context.res) {
-        context.res.writeHead(303, { Location: next_page_edit + `?staffcode=${staffcode}` });
+        context.res.writeHead(303, {
+          Location: next_page_edit + `?staffcode=${staffcode}`,
+        });
         context.res.end();
       }
     }
-    if (body_json.delete != undefined) {
+    if (fields_json.delete != undefined) {
       if (context.res) {
-        context.res.writeHead(303, { Location: next_page_delete + `?staffcode=${staffcode}` });
+        context.res.writeHead(303, {
+          Location: next_page_delete + `?staffcode=${staffcode}`,
+        });
         context.res.end();
       }
     }

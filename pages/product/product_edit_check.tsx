@@ -7,8 +7,6 @@ import React from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
-import getRawBody from "raw-body";
-import formUrlDecoded from "form-urldecoded";
 import htmlspecialchars from "htmlspecialchars";
 import md5 from "md5";
 import {
@@ -16,6 +14,7 @@ import {
   msgElementSystemError,
 } from "../../lib/global_const";
 import { CompReferer, transferImageFile } from "../../lib/myUtils";
+import { myParse, sanitizeFields } from "../../lib/myUtils";
 import withSession from "../../lib/session";
 import { msgYouHaveNotLogin, uploadFilePath } from "../../lib/global_const";
 import parse, { Body } from "then-busboy";
@@ -247,41 +246,42 @@ export const getServerSideProps: GetServerSideProps = withSession(
       }
 
       //#region POSTメッセージからパラメータを取得する
-      const body: Body = await parse(req);
+      const body = await myParse(req);
       const body_json = body.json();
+      const fields_json = sanitizeFields(body);
       //console.log(body_json);
 
-      const code =
-        typeof body_json.code == void 0 || body_json.code == 0
+      productEditCheckParam.code =
+        typeof fields_json.code == void 0 || fields_json.code == 0
           ? ""
-          : body_json.code;
-      const name =
-        typeof body_json.name == void 0 || body_json.name == 0
+          : fields_json.code;
+      productEditCheckParam.name =
+        typeof fields_json.name == void 0 || fields_json.name == 0
           ? ""
-          : body_json.name;
-      const price =
-        typeof body_json.price == void 0 || body_json.price == 0
+          : fields_json.name;
+      productEditCheckParam.price =
+        typeof fields_json.price == void 0 || fields_json.price == 0
           ? ""
-          : body_json.price;
+          : fields_json.price;
       // const image =
       //   typeof body_json.image == void 0 || body_json.image == 0
       //     ? ""
       //     : body_json.image;
-      const image_old =
-        typeof body_json.image_old == void 0 || body_json.image_old == 0
+      productEditCheckParam.image_old =
+        typeof fields_json.image_old == void 0 || fields_json.image_old == 0
           ? ""
-          : body_json.image_old;
-      const image_change =
-        typeof body_json.imagechange == void 0 || body_json.imagechange == 0
+          : fields_json.image_old;
+      productEditCheckParam.image_change =
+        typeof fields_json.imagechange == void 0 || fields_json.imagechange == 0
           ? "no"
-          : body_json.imagechange;
+          : fields_json.imagechange;
       //console.log(product_edit_param);
 
-      productEditCheckParam.code = htmlspecialchars(code);
-      productEditCheckParam.name = htmlspecialchars(name);
-      productEditCheckParam.price = htmlspecialchars(price);
-      productEditCheckParam.image_old = htmlspecialchars(image_old);
-      productEditCheckParam.image_change = htmlspecialchars(image_change);
+      // productEditCheckParam.code = htmlspecialchars(code);
+      // productEditCheckParam.name = htmlspecialchars(name);
+      // productEditCheckParam.price = htmlspecialchars(price);
+      // productEditCheckParam.image_old = htmlspecialchars(image_old);
+      // productEditCheckParam.image_change = htmlspecialchars(image_change);
       //#endregion POSTメッセージからパラメータを取得する
 
       //const match_result = productEditCheckParam.price.match(/^[^0-9]+/);

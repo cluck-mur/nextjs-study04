@@ -7,8 +7,6 @@ import React from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
-import getRawBody from "raw-body";
-import formUrlDecoded from "form-urldecoded";
 import htmlspecialchars from "htmlspecialchars";
 import md5 from "md5";
 import {
@@ -16,6 +14,7 @@ import {
   msgElementSystemError,
 } from "../../lib/global_const";
 import { CompReferer } from "../../lib/myUtils";
+import { myParse, sanitizeFields } from "../../lib/myUtils";
 import withSession from "../../lib/session";
 import { msgYouHaveNotLogin } from "../../lib/global_const";
 
@@ -210,20 +209,20 @@ export const getServerSideProps: GetServerSideProps = withSession(
       }
 
       //#region POSTメッセージからパラメータを取得する
-      const body = await getRawBody(context.req);
-      const body_string = body.toString();
-      const body_json = formUrlDecoded(body_string);
+      const body = await myParse(req);
+      const body_json = body.json();
+      const fields_json = sanitizeFields(body);
       //console.log(body_json)
 
-      const name = typeof body_json.name == "undefined" ? "" : body_json.name;
-      const pass = typeof body_json.pass == "undefined" ? "" : body_json.pass;
+      const name = typeof fields_json.name == "undefined" ? "" : fields_json.name;
+      const pass = typeof fields_json.pass == "undefined" ? "" : fields_json.pass;
       const pass2 =
-        typeof body_json.pass2 == "undefined" ? "" : body_json.pass2;
+        typeof fields_json.pass2 == "undefined" ? "" : fields_json.pass2;
       //console.log(staff_add_param);
 
-      staffAddCheckParam.name = htmlspecialchars(name);
-      staffAddCheckParam.pass = htmlspecialchars(pass);
-      staffAddCheckParam.pass2 = htmlspecialchars(pass2);
+      staffAddCheckParam.name = name;
+      staffAddCheckParam.pass = pass;
+      staffAddCheckParam.pass2 = pass2;
       //#endregion POSTメッセージからパラメータを取得する
     } else {
       if (context.res) {

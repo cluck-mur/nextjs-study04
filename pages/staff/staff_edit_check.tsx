@@ -7,8 +7,6 @@ import React from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
-import getRawBody from "raw-body";
-import formUrlDecoded from "form-urldecoded";
 import htmlspecialchars from "htmlspecialchars";
 import md5 from "md5";
 import {
@@ -16,6 +14,7 @@ import {
   msgElementSystemError,
 } from "../../lib/global_const";
 import { CompReferer } from "../../lib/myUtils";
+import { myParse, sanitizeFields } from "../../lib/myUtils";
 import withSession from "../../lib/session";
 import { msgYouHaveNotLogin } from "../../lib/global_const";
 
@@ -229,20 +228,21 @@ export const getServerSideProps: GetServerSideProps = withSession(
       }
 
       //#region POSTメッセージからパラメータを取得する
-      const body = await getRawBody(context.req);
-      const body_string = body.toString();
-      const body_json = formUrlDecoded(body_string);
+      const body = await myParse(req);
+      //const body_json = body.json();
+      const fields_json = sanitizeFields(body);
       //console.log(body_json)
-      const code = typeof body_json.code == "undefined" ? "" : body_json.code;
-      const name = typeof body_json.name == "undefined" ? "" : body_json.name;
-      const pass = typeof body_json.pass == "undefined" ? "" : body_json.pass;
+
+      const code = typeof fields_json.code == "undefined" ? "" : fields_json.code;
+      const name = typeof fields_json.name == "undefined" ? "" : fields_json.name;
+      const pass = typeof fields_json.pass == "undefined" ? "" : fields_json.pass;
       const pass2 =
-        typeof body_json.pass2 == "undefined" ? "" : body_json.pass2;
+        typeof fields_json.pass2 == "undefined" ? "" : fields_json.pass2;
       //console.log(staff_add_param);
-      staffEditCheckParam.code = htmlspecialchars(code);
-      staffEditCheckParam.name = htmlspecialchars(name);
-      staffEditCheckParam.pass = htmlspecialchars(pass);
-      staffEditCheckParam.pass2 = htmlspecialchars(pass2);
+      staffEditCheckParam.code = code;
+      staffEditCheckParam.name = name;
+      staffEditCheckParam.pass = pass;
+      staffEditCheckParam.pass2 = pass2;
       //#endregion POSTメッセージからパラメータを取得する
 
       return {

@@ -7,8 +7,6 @@ import React from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
-import getRawBody from "raw-body";
-import formUrlDecoded from "form-urldecoded";
 import htmlspecialchars from "htmlspecialchars";
 import md5 from "md5";
 import {
@@ -17,9 +15,9 @@ import {
   msgElementSystemError,
 } from "../../lib/global_const";
 import { CompReferer, transferImageFile } from "../../lib/myUtils";
+import { myParse, sanitizeFields } from "../../lib/myUtils";
 import withSession from "../../lib/session";
 import { msgYouHaveNotLogin } from "../../lib/global_const";
-import parse, { Body } from "then-busboy";
 import fs, { ReadStream, WriteStream } from "fs";
 import path from "path";
 
@@ -278,21 +276,18 @@ export const getServerSideProps: GetServerSideProps = withSession(
       }
 
       //#region POSTメッセージからパラメータを取得する
-      const body: Body = await parse(req);
+      const body = await myParse(req);
       const body_json = body.json();
-      //console.log(body_json);
+      const fields_json = sanitizeFields(body);
 
-      const name =
-        typeof body_json.name == void 0 || body_json.name == 0
+      productAddCheckParam.name =
+        typeof fields_json.name == void 0 || fields_json.name == 0
           ? ""
-          : body_json.name;
-      const price =
-        typeof body_json.price == void 0 || body_json.price == 0
+          : fields_json.name;
+      productAddCheckParam.price =
+        typeof fields_json.price == void 0 || fields_json.price == 0
           ? ""
-          : body_json.price;
-
-      productAddCheckParam.name = htmlspecialchars(name);
-      productAddCheckParam.price = htmlspecialchars(price);
+          : fields_json.price;
       //#endregion POSTメッセージからパラメータを取得する
 
       //const match_result = productAddCheckParam.price.match(/^[^0-9]+/);

@@ -7,8 +7,6 @@ import React from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
-import getRawBody from "raw-body";
-import formUrlDecoded from "form-urldecoded";
 import htmlspecialchars from "htmlspecialchars";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
@@ -20,6 +18,7 @@ import {
   msgElementSystemError,
 } from "../../lib/global_const";
 import { CompReferer } from "../../lib/myUtils";
+import { myParse, sanitizeFields } from "../../lib/myUtils";
 import withSession from "../../lib/session";
 import fs from "fs";
 import { msgYouHaveNotLogin, uploadFilePath } from "../../lib/global_const";
@@ -137,19 +136,19 @@ export const getServerSideProps: GetServerSideProps = withSession(
         return { props: productDeleteDoneParam };
       }
 
-      const body = await getRawBody(context.req);
-      const body_string = body.toString();
-      const body_json = formUrlDecoded(body_string);
+      const body = await myParse(req);
+      const body_json = body.json();
+      const fields_json = sanitizeFields(body);
 
       //#region 前画面からデータを受け取る
-      const code = typeof body_json.code == "undefined" ? "" : body_json.code;
-      const name = typeof body_json.name == "undefined" ? "" : body_json.name;
+      const code = typeof fields_json.code == "undefined" ? "" : fields_json.code;
+      const name = typeof fields_json.name == "undefined" ? "" : fields_json.name;
       const image =
-        typeof body_json.image == "undefined" ? "" : body_json.image;
+        typeof fields_json.image == "undefined" ? "" : fields_json.image;
 
-      const product_code = htmlspecialchars(code);
-      const product_name = htmlspecialchars(name);
-      const product_image = htmlspecialchars(image);
+      const product_code = code;
+      const product_name = name;
+      const product_image = image;
       //#endregion 前画面からデータを受け取る
 
       //#region DBへproductを追加

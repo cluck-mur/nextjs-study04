@@ -2,6 +2,9 @@ import React from "react";
 import styled from "styled-components";
 import { useState, ChangeEvent, useRef } from "react";
 import fs, { ReadStream, WriteStream } from "fs";
+import parse, { Body } from "then-busboy";
+import { IncomingMessage } from "http";
+import htmlspecialchars from "htmlspecialchars";
 
 /**
  * JSX形式のメッセージを生成する
@@ -58,3 +61,38 @@ export const transferImageFile = async (rs: ReadStream, ws: WriteStream) => {
   }
 };
 
+/**
+ * POST Bodyをパースする
+ * npm then-busboy に依存
+ * @param req 
+ */
+export const myParse = async (req: IncomingMessage) => {
+  return await parse(req);
+};
+
+/**
+ * POST BodyからFieldsをJsonで返す
+ * 返すデータはhtmlspecialcharsで無害化済み
+ * npm then-busboy に依存
+ * @param body 
+ */
+export const sanitizeFields = (body: Body) => {
+  let field: string = "{";
+  let i = 0;
+  body.map((entry) => {
+    // console.log("----------\n");
+    //console.log(entry);
+    // console.log(entry.mime);
+    if (entry.mime == "text/plain" || entry.mime == void 0) {
+      if (i > 0) {
+        field += ",";
+      }
+      const sanitized = htmlspecialchars(entry.value);
+      field += `"${entry.fieldname}":"${sanitized}"`;
+      i++;
+    }
+  });
+  field += "}";
+  const fields_json = JSON.parse(field);
+  return fields_json
+}

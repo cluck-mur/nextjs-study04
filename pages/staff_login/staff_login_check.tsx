@@ -219,7 +219,9 @@ export const getServerSideProps: GetServerSideProps = withSession(
           //console.log(staff);
           //#endregion MySql用のコード
 
-          if (staff.length == 1) {
+          if (staff == void 0) {
+            is_exception = true;
+          } else if (staff.length == 1) {
             const staff_name = staff[0].name;
             staffLoginCheckParam.name = htmlspecialchars(staff_name);
           } else if (staff.length < 1) {

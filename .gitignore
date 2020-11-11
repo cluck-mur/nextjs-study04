@@ -37,5 +37,3 @@ yarn-error.log*
 /ドキュメント/~WRL0005.tmp
 /public/upload/*.jpg
 /public/upload/*.png
-.env.development
-.env.production

@@ -7,7 +7,8 @@ import React from "react";
 import { GetStaticProps } from "next";
 import Head from "next/head";
 
-const StaffLogin = ({}) => {
+//const StaffLogin = ({}) => {
+const StaffLogin = ({ host, database, user, password }) => {
   const items = [];
   items.push(
     <React.Fragment key="head">
@@ -33,6 +34,17 @@ const StaffLogin = ({}) => {
         <br />
         <input type="submit" value="ログイン" />
       </form>
+      {/* 実験 */}
+      <br />
+      <br />
+      {host}
+      <br />
+      {database}
+      <br />
+      {user}
+      <br />
+      {password}
+      <br />
     </React.Fragment>
   );
 
@@ -45,8 +57,20 @@ export const getStaticProps: GetStaticProps = async () => {
   console.log("$MYSQL_USER: " + process.env.MYSQL_USER);
   console.log("$MYSQL_PASSWORD: " + process.env.MYSQL_PASSWORD);
 
+  // return {
+  //   props: {}
+  // };
+  const host = process.env.MYSQL_HOST != void 0 ? process.env.MYSQL_HOST : "なし";
+  const database = process.env.MYSQL_DATABASE != void 0 ? process.env.MYSQL_DATABASE : "なし";
+  const user = process.env.MYSQL_USER != void 0 ? process.env.MYSQL_USER : "なし";
+  const password = process.env.MYSQL_PASSWORD != void 0 ? process.env.MYSQL_PASSWORD : "なし";
   return {
-    props: {},
+    props: {
+      host: host,
+      database: database,
+      user: user,
+      password: password
+    },
   };
 };
 

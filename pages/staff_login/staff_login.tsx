@@ -8,7 +8,7 @@ import { GetStaticProps } from "next";
 import Head from "next/head";
 
 //const StaffLogin = ({}) => {
-const StaffLogin = ({ host, database, user, password }) => {
+const StaffLogin = ({}) => {
   const items = [];
   items.push(
     <React.Fragment key="head">
@@ -34,17 +34,6 @@ const StaffLogin = ({ host, database, user, password }) => {
         <br />
         <input type="submit" value="ログイン" />
       </form>
-      {/* 実験 */}
-      <br />
-      <br />
-      {host}
-      <br />
-      {database}
-      <br />
-      {user}
-      <br />
-      {password}
-      <br />
     </React.Fragment>
   );
 
@@ -52,25 +41,8 @@ const StaffLogin = ({ host, database, user, password }) => {
 };
 
 export const getStaticProps: GetStaticProps = async () => {
-  console.log("$MYSQL_HOST: " + process.env.MYSQL_HOST);
-  console.log("$MYSQL_DATABASE: " + process.env.MYSQL_DATABASE);
-  console.log("$MYSQL_USER: " + process.env.MYSQL_USER);
-  console.log("$MYSQL_PASSWORD: " + process.env.MYSQL_PASSWORD);
-
-  // return {
-  //   props: {}
-  // };
-  const host = process.env.MYSQL_HOST != void 0 ? process.env.MYSQL_HOST : "なし";
-  const database = process.env.MYSQL_DATABASE != void 0 ? process.env.MYSQL_DATABASE : "なし";
-  const user = process.env.MYSQL_USER != void 0 ? process.env.MYSQL_USER : "なし";
-  const password = process.env.MYSQL_PASSWORD != void 0 ? process.env.MYSQL_PASSWORD : "なし";
   return {
-    props: {
-      host: host,
-      database: database,
-      user: user,
-      password: password
-    },
+    props: {}
   };
 };
 

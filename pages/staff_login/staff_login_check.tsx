@@ -7,8 +7,8 @@ import React from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
-import sqlite3 from "sqlite3";
-import { open } from "sqlite";
+// import sqlite3 from "sqlite3";
+// import { open } from "sqlite";
 import path from "path";
 import htmlspecialchars from "htmlspecialchars";
 import md5 from "md5";
@@ -26,6 +26,8 @@ import {
 import { CompReferer } from "../../lib/myUtils";
 import { myParse, sanitizeFields } from "../../lib/myUtils";
 import { Session } from "inspector";
+import db from "../../lib/db";
+import { SQL } from "sql-template-strings";
 
 type StaffLoginCheckParam = {
   is_exception: boolean;
@@ -169,8 +171,10 @@ export const getServerSideProps: GetServerSideProps = withSession(
       const fields_json = sanitizeFields(body);
       //console.log(body_json)
 
-      const code = typeof fields_json.code == "undefined" ? "" : fields_json.code;
-      const pass = typeof fields_json.pass == "undefined" ? "" : fields_json.pass;
+      const code =
+        typeof fields_json.code == "undefined" ? "" : fields_json.code;
+      const pass =
+        typeof fields_json.pass == "undefined" ? "" : fields_json.pass;
       //console.log(staff_add_param);
 
       staffLoginCheckParam.code = code;
@@ -187,7 +191,9 @@ export const getServerSideProps: GetServerSideProps = withSession(
         const fullPath: string = path.join(dbWorkDirectory, filename);
         let is_exception: boolean = false;
         try {
-          // DBオープン
+          //#region sqlite3用のコード
+          /*  
+          DBオープン
           const db = await open({
             filename: fullPath,
             driver: sqlite3.Database,
@@ -197,7 +203,22 @@ export const getServerSideProps: GetServerSideProps = withSession(
           const staff: { name: string }[] = await db.all(
             `SELECT name FROM mst_staff WHERE code=${staffLoginCheckParam.code} AND password="${staffLoginCheckParam.pass}"`
           );
-          // console.log(staff);
+          console.log(staff);
+          */
+          //#endregion sqlite3用のコード
+
+          //#region MySql用のコード
+          // const sql = SQL`SELECT name FROM mst_staff WHERE code=${staffLoginCheckParam.code} AND password="${staffLoginCheckParam.pass}"`;
+          // console.log(sql.text);
+          // console.log(sql.sql);
+          // console.log(sql.query);
+          // console.log(sql.name);
+          // console.log(sql.values);
+          const sql = `SELECT name FROM mst_staff WHERE code=${staffLoginCheckParam.code} AND password="${staffLoginCheckParam.pass}"`;
+          const staff: { name: string }[] = await db.query(sql);
+          //console.log(staff);
+          //#endregion MySql用のコード
+
           if (staff.length == 1) {
             const staff_name = staff[0].name;
             staffLoginCheckParam.name = htmlspecialchars(staff_name);

@@ -56,7 +56,13 @@ export const CompReferer = (
  * @param ws
  */
 export const transferImageFile = async (rs: ReadStream, ws: WriteStream) => {
+  console.log("transferImageFileに来た");
+  console.log("rs:");
+  console.log(rs);
+  console.log("ws:");
+  console.log(ws);
   for await (const chunk of rs) {
+    console.log("wsへ書き込み");
     await ws.write(chunk);
   }
 };

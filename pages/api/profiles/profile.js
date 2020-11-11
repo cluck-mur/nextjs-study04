@@ -4,7 +4,7 @@
  * https://vercel.com/guides/deploying-next-and-mysql-with-vercel
  * からコピー
  */
-const db = require('../../lib/db')
+const db = require('../../../lib/db')
 const escape = require('sql-template-strings')
 
 module.exports = async (req, res) => {

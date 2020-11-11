@@ -35,5 +35,5 @@ yarn-error.log*
 /ドキュメント/~$(添付)Next.js ショッピングサイトデモ 作業ログ.xlsx
 /ドキュメント/~$Code向けデバッグ設定 手順.docx
 /ドキュメント/~WRL0005.tmp
-/public/upload/*.jpg
-/public/upload/*.png
+#/public/upload/*.jpg
+#/public/upload/*.png

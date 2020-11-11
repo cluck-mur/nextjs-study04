@@ -338,10 +338,13 @@ export const getServerSideProps: GetServerSideProps = withSession(
                 rs = fs.createReadStream(body_json.image.path, {
                   autoClose: true,
                 });
+                console.log("テンポラリファイル: " + body_json.image.path);
+
                 ws = fs.createWriteStream(fullPath, {
                   autoClose: true,
                   flags: "w",
                 });
+                console.log("書き込みファイル: " + fullPath);
 
                 // ファイルコピー
                 await transferImageFile(rs, ws);

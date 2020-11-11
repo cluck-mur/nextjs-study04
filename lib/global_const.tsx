@@ -1,8 +1,6 @@
 import React from "react";
 import Link from "next/link";
 
-export const dbFilePath: string = ".db_work";
-export const dbFileName: string = "MyDb.sqlite";
 export const uploadFilePath: string = "public/upload";
 
 export const staffNameMaxLegth: number = 14;

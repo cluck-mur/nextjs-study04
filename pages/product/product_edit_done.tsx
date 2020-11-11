@@ -8,13 +8,9 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import htmlspecialchars from "htmlspecialchars";
-import sqlite3 from "sqlite3";
-import { open } from "sqlite";
 import fs from "fs";
 import path from "path";
 import {
-  dbFilePath,
-  dbFileName,
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";
@@ -22,6 +18,8 @@ import { CompReferer } from "../../lib/myUtils";
 import { myParse, sanitizeFields } from "../../lib/myUtils";
 import withSession from "../../lib/session";
 import { msgYouHaveNotLogin, uploadFilePath } from "../../lib/global_const";
+import db from "../../lib/db";
+import { SQL } from "sql-template-strings";
 
 type ProductEditDoneParam = {
   login: string;
@@ -144,15 +142,23 @@ export const getServerSideProps: GetServerSideProps = withSession(
       const fields_json = sanitizeFields(body);
 
       productEditDoneParam.product_code =
-        typeof fields_json.code == "undefined" ? "" : fields_json.code;
+        typeof fields_json.code == void 0 || fields_json.code == 0
+          ? ""
+          : fields_json.code;
       productEditDoneParam.product_name =
-        typeof fields_json.name == "undefined" ? "" : fields_json.name;
+        typeof fields_json.name == void 0 || fields_json.name == 0
+          ? ""
+          : fields_json.name;
       productEditDoneParam.product_price =
-        typeof fields_json.price == "undefined" ? "" : fields_json.price;
+        typeof fields_json.price == void 0 || fields_json.price == 0
+          ? ""
+          : fields_json.price;
       productEditDoneParam.product_image =
-        typeof fields_json.image == "undefined" ? "" : fields_json.image;
+        typeof body_json.image == void 0 || body_json.image == 0
+          ? ""
+          : body_json.image;
       const image_old =
-        typeof fields_json.image_old == "undefined"
+        typeof fields_json.image_old == void 0 || fields_json.image_old == 0
           ? ""
           : fields_json.image_old;
 
@@ -164,47 +170,40 @@ export const getServerSideProps: GetServerSideProps = withSession(
       //#endregion POSTメッセージからパラメータを取得する
 
       //#region DBへproductを修正
-      // DBファイルのパスを取得
-      const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
-      const filename: string = dbFileName;
-      const fullPath: string = path.join(dbWorkDirectory, filename);
-
       let is_exception = false;
       try {
-        // DBオープン
-        const db = await open({
-          filename: fullPath,
-          driver: sqlite3.Database,
-        });
-        //db.serialize();
+        //#region DBアクセス
         const sql = `UPDATE mst_product SET name="${product_name}",price=${product_price},gazou="${product_image}" WHERE code=${product_code}`;
-        let stmt = await db.prepare(sql);
-        try {
-          await stmt.run();
-        } catch (e) {
-          is_exception = true;
-        } finally {
-          await stmt.finalize();
-        }
+        const result = await db.query(sql);
+        //#endregion DBアクセス
 
-        if (
-          typeof product_image_old != void 0 &&
-          product_image_old.length > 0
-        ) {
-          const product: {
-            code: number;
-          }[] = await db.all(
-            // `SELECT code FROM mst_product WHERE gazou="${product_image_old}" AND code!=${product_code}`
-            `SELECT code FROM mst_product WHERE gazou="${product_image_old}"`
-          );
-          if (!(product.length > 0)) {
-            // ファイルを消去する
-            // uploadファイルのパスを取得
-            const dbWorkDirectory = path.join(process.cwd(), uploadFilePath);
-            const filename: string = product_image_old;
-            const fullPath: string = path.join(dbWorkDirectory, filename);
-            if (fs.existsSync(fullPath)) {
-              fs.unlinkSync(fullPath);
+        if (result.error != void 0) {
+          is_exception = true;
+        } else {
+          // 古い画像をアップロードフォルダから消去する
+          if (
+            typeof product_image_old != void 0 &&
+            product_image_old.length > 0
+          ) {
+            //#region DBアクセス
+            const sql = `SELECT code FROM mst_product WHERE gazou="${product_image_old}"`;
+            const raw_product: {
+              code: number;
+            }[] = await db.query(sql);
+            //#endregion DBアクセス
+
+            // RowDataPacket型からplain dataに変換
+            const product = JSON.parse(JSON.stringify(raw_product));
+
+            if (!(product.length > 0)) {
+              // ファイルを消去する
+              // uploadファイルのパスを取得
+              const dbWorkDirectory = path.join(process.cwd(), uploadFilePath);
+              const filename: string = product_image_old;
+              const fullPath: string = path.join(dbWorkDirectory, filename);
+              if (fs.existsSync(fullPath)) {
+                fs.unlinkSync(fullPath);
+              }
             }
           }
         }

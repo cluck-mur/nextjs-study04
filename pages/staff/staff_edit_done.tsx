@@ -8,12 +8,8 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import htmlspecialchars from "htmlspecialchars";
-import sqlite3 from "sqlite3";
-import { open } from "sqlite";
 import path from "path";
 import {
-  dbFilePath,
-  dbFileName,
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";
@@ -21,6 +17,8 @@ import { CompReferer } from "../../lib/myUtils";
 import { myParse, sanitizeFields } from "../../lib/myUtils";
 import withSession from "../../lib/session";
 import { msgYouHaveNotLogin } from "../../lib/global_const";
+import db from "../../lib/db";
+import { SQL } from "sql-template-strings";
 
 type StaffEditDoneParam = {
   login: string;
@@ -139,9 +137,12 @@ export const getServerSideProps: GetServerSideProps = withSession(
       //const body_json = body.json();
       const fields_json = sanitizeFields(body);
 
-      const code = typeof fields_json.code == "undefined" ? "" : fields_json.code;
-      const name = typeof fields_json.name == "undefined" ? "" : fields_json.name;
-      const pass = typeof fields_json.pass == "undefined" ? "" : fields_json.pass;
+      const code =
+        typeof fields_json.code == "undefined" ? "" : fields_json.code;
+      const name =
+        typeof fields_json.name == "undefined" ? "" : fields_json.name;
+      const pass =
+        typeof fields_json.pass == "undefined" ? "" : fields_json.pass;
 
       //#region 前画面からデータを受け取る
       const staff_code = code;
@@ -150,27 +151,15 @@ export const getServerSideProps: GetServerSideProps = withSession(
       //#endregion 前画面からデータを受け取る
 
       //#region DBへstaffを追加
-      // DBファイルのパスを取得
-      const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
-      const filename: string = dbFileName;
-      const fullPath: string = path.join(dbWorkDirectory, filename);
-
       let is_exception = false;
       try {
-        // DBオープン
-        const db = await open({
-          filename: fullPath,
-          driver: sqlite3.Database,
-        });
-        //db.serialize();
+        //#region DBアクセス
         const sql = `UPDATE mst_staff SET name="${staff_name}",password="${staff_pass}" WHERE code=${staff_code}`;
-        let stmt = await db.prepare(sql);
-        try {
-          await stmt.run();
-        } catch (e) {
+        const result = await db.query(sql);
+        //#endregion DBアクセス
+
+        if (result.error != void 0) {
           is_exception = true;
-        } finally {
-          await stmt.finalize();
         }
       } catch (e) {
         is_exception = true;

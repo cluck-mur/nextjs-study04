@@ -7,13 +7,9 @@ import React from "react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import sqlite3 from "sqlite3";
-import { open } from "sqlite";
 import path from "path";
 import htmlspecialchars from "htmlspecialchars";
 import {
-  dbFilePath,
-  dbFileName,
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";

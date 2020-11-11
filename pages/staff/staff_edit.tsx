@@ -7,13 +7,9 @@ import React from "react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import sqlite3 from "sqlite3";
-import { open } from "sqlite";
 import path from "path";
 import htmlspecialchars from "htmlspecialchars";
 import {
-  dbFilePath,
-  dbFileName,
   staffNameMaxLegth,
   msgElementSystemError,
   msgElementStaffWasNotSelected,
@@ -22,6 +18,8 @@ import {
 } from "../../lib/global_const";
 import withSession from "../../lib/session";
 import { msgYouHaveNotLogin } from "../../lib/global_const";
+import db from "../../lib/db";
+import { SQL } from "sql-template-strings";
 
 type StaffEditParam = {
   login: string;
@@ -33,6 +31,7 @@ type StaffEditParam = {
   is_exception: boolean;
   staff_code: string;
   staff_name: string;
+  is_master: boolean;
 };
 
 const next_page: string = "/staff/staff_edit_check";
@@ -112,6 +111,26 @@ const StaffEdit = (staffEditParam: StaffEditParam) => {
             <b>スタッフコード</b>
             <br />
             {staffEditParam.staff_code}
+            <br />
+            <input
+              type="button"
+              onClick={() => router.push(redirect_page)}
+              value="戻る"
+            />
+          </React.Fragment>
+        );
+      } else if (staffEditParam.is_master) {
+        // マスター管理者だったら
+        items.push(
+          <React.Fragment>
+            <div style={{ color: "red" }}>
+              マスター管理者を修正することはできません。
+            </div>
+            <br />
+            <b>スタッフコード</b>
+            <br />
+            {staffEditParam.staff_code}
+            <br />
             <br />
             <input
               type="button"
@@ -210,6 +229,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
       is_exception: false,
       staff_code: "",
       staff_name: "",
+      is_master: false,
     };
 
     const req = context.req;
@@ -246,26 +266,23 @@ export const getServerSideProps: GetServerSideProps = withSession(
         staffEditParam.staff_code = staffcode;
 
         //#region DBへstaffを追加
-        // DBファイルのパスを取得
-        const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
-        const filename: string = dbFileName;
-        const fullPath: string = path.join(dbWorkDirectory, filename);
         let is_exception: boolean = false;
         try {
-          // DBオープン
-          const db = await open({
-            filename: fullPath,
-            driver: sqlite3.Database,
-          });
-          //db.serialize();
+          //#region DBアクセス
+          const sql = `SELECT name,is_master FROM mst_staff WHERE code=${staffcode}`;
+          const raw_staff: {
+            name: string;
+            is_master: boolean;
+          }[] = await db.query(sql);
+          //#endregion DBアクセス
 
-          const staff: { name: string }[] = await db.all(
-            `SELECT name FROM mst_staff WHERE code=${staffcode}`
-          );
-          // console.log(staff);
+          // RowDataPacket型からplain dataに変換
+          const staff = JSON.parse(JSON.stringify(raw_staff));
+
           if (staff.length == 1) {
             const staff_name = staff[0].name;
             staffEditParam.staff_name = htmlspecialchars(staff_name);
+            staffEditParam.is_master = staff[0].is_master;
           } else if (staff.length < 1) {
             staffEditParam.is_noexist_staffcode = true;
           } else {

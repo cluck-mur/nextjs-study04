@@ -7,17 +7,15 @@ import React from "react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
-import sqlite3 from "sqlite3";
-import { open } from "sqlite";
 import path from "path";
 import {
-  dbFilePath,
-  dbFileName,
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";
 import withSession from "../../lib/session";
 import { msgYouHaveNotLogin } from "../../lib/global_const";
+import db from "../../lib/db";
+import { SQL } from "sql-template-strings";
 
 type ProductListParam = {
   login: string;
@@ -160,23 +158,20 @@ export const getServerSideProps: GetServerSideProps = withSession(
     }
 
     //#region DBへproductを追加
-    // DBファイルのパスを取得
-    const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
-    const filename: string = dbFileName;
-    const fullPath: string = path.join(dbWorkDirectory, filename);
-
     let is_exception = productListParam.is_exception;
     try {
-      // DBオープン
-      const db = await open({
-        filename: fullPath,
-        driver: sqlite3.Database,
-      });
-      //db.serialize();
+      //#region DBアクセス
+      const sql = `SELECT code,name,price FROM mst_product WHERE 1`;
+      const raw_products: {
+        code: number;
+        name: string;
+        price: number;
+      }[] = await db.query(sql);
+      //#endregion DBアクセス
 
-      const products = await db.all(
-        "SELECT code,name,price FROM mst_product WHERE 1"
-      );
+      // RowDataPacket型からplain dataに変換
+      const products = JSON.parse(JSON.stringify(raw_products));
+
       products.map((product) => {
         productListParam.products.push(product);
       });

@@ -8,12 +8,8 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import htmlspecialchars from "htmlspecialchars";
-import sqlite3 from "sqlite3";
-import { open } from "sqlite";
 import path from "path";
 import {
-  dbFilePath,
-  dbFileName,
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";
@@ -21,6 +17,8 @@ import { CompReferer } from "../../lib/myUtils";
 import { myParse, sanitizeFields } from "../../lib/myUtils";
 import withSession from "../../lib/session";
 import { msgYouHaveNotLogin } from "../../lib/global_const";
+import db from "../../lib/db";
+import { SQL } from "sql-template-strings";
 
 type ProductAddDoneParam = {
   login: string;
@@ -161,27 +159,15 @@ export const getServerSideProps: GetServerSideProps = withSession(
       //#endregion POSTメッセージからパラメータを取得する
 
       //#region DBへproductを追加
-      // DBファイルのパスを取得
-      const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
-      const filename: string = dbFileName;
-      const fullPath: string = path.join(dbWorkDirectory, filename);
-
       let is_exception = false;
       try {
-        // DBオープン
-        const db = await open({
-          filename: fullPath,
-          driver: sqlite3.Database,
-        });
-        //db.serialize();
-        const sql = `INSERT INTO mst_product(name,price,gazou) VALUES ("${product_name}",${product_price},"${product_image}")`;
-        let stmt = await db.prepare(sql);
-        try {
-          await stmt.run();
-        } catch (e) {
+          //#region DBアクセス
+          const sql = `INSERT INTO mst_product(name,price,gazou) VALUES ("${product_name}",${product_price},"${product_image}")`;
+          const result = await db.query(sql);
+          //#endregion DBアクセス
+        
+        if (result.error != void 0) {
           is_exception = true;
-        } finally {
-          await stmt.finalize();
         }
       } catch (e) {
         is_exception = true;

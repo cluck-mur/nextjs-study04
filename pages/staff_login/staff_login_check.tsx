@@ -7,16 +7,11 @@ import React from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
-// import sqlite3 from "sqlite3";
-// import { open } from "sqlite";
 import path from "path";
 import htmlspecialchars from "htmlspecialchars";
 import md5 from "md5";
 import withSession from "../../lib/session";
-// import { applySession } from "next-iron-session";
 import {
-  dbFilePath,
-  dbFileName,
   msgElementHttpReqError,
   msgElementSystemError,
   msgElementStaffWasNotSelected,
@@ -154,16 +149,6 @@ export const getServerSideProps: GetServerSideProps = withSession(
     );
     //#endregion refererチェック
 
-    // await applySession(req, res, {
-    //   password: process.env.SECRET_COOKIE_PASSWORD,
-    //   cookieName: "nextjs-study04",
-    //   cookieOptions: {
-    //     // the next line allows to use the session in non-https environements like
-    //     // Next.js dev mode (http://localhost:3000)
-    //     secure: process.env.NODE_ENV === "production",
-    //   },
-    // });
-
     if (req.method == "POST" && refcomp_result) {
       //#region POSTメッセージからパラメータを取得する
       const body = await myParse(req);
@@ -185,39 +170,15 @@ export const getServerSideProps: GetServerSideProps = withSession(
         // パスワードをハッシュ化
         staffLoginCheckParam.pass = md5(staffLoginCheckParam.pass);
 
-        // DBファイルのパスを取得
-        const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
-        const filename: string = dbFileName;
-        const fullPath: string = path.join(dbWorkDirectory, filename);
         let is_exception: boolean = false;
         try {
-          //#region sqlite3用のコード
-          /*  
-          DBオープン
-          const db = await open({
-            filename: fullPath,
-            driver: sqlite3.Database,
-          });
-          //db.serialize();
-
-          const staff: { name: string }[] = await db.all(
-            `SELECT name FROM mst_staff WHERE code=${staffLoginCheckParam.code} AND password="${staffLoginCheckParam.pass}"`
-          );
-          console.log(staff);
-          */
-          //#endregion sqlite3用のコード
-
-          //#region MySql用のコード
-          // const sql = SQL`SELECT name FROM mst_staff WHERE code=${staffLoginCheckParam.code} AND password="${staffLoginCheckParam.pass}"`;
-          // console.log(sql.text);
-          // console.log(sql.sql);
-          // console.log(sql.query);
-          // console.log(sql.name);
-          // console.log(sql.values);
+          //#region DBアクセス
           const sql = `SELECT name FROM mst_staff WHERE code=${staffLoginCheckParam.code} AND password="${staffLoginCheckParam.pass}"`;
-          const staff: { name: string }[] = await db.query(sql);
-          //console.log(staff);
-          //#endregion MySql用のコード
+          const raw_staff: { name: string }[] = await db.query(sql);
+          //#endregion DBアクセス
+
+          // RowDataPacket型からplain dataに変換
+          const staff = JSON.parse(JSON.stringify(raw_staff));
 
           if (staff == void 0) {
             is_exception = true;

@@ -7,13 +7,9 @@ import React from "react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import sqlite3 from "sqlite3";
-import { open } from "sqlite";
 import path from "path";
 import htmlspecialchars from "htmlspecialchars";
 import {
-  dbFilePath,
-  dbFileName,
   productNameMaxLegth,
   msgElementSystemError,
   msgElementProductWasNotSelected,
@@ -22,6 +18,8 @@ import {
 } from "../../lib/global_const";
 import withSession from "../../lib/session";
 import { msgYouHaveNotLogin } from "../../lib/global_const";
+import db from "../../lib/db";
+import { SQL } from "sql-template-strings";
 
 type ProductDeleteParam = {
   login: string;
@@ -245,8 +243,8 @@ export const getServerSideProps: GetServerSideProps = withSession(
       // const body_json = formUrlDecoded(body_string);
       //console.log(body_json)
       const productcode: string =
-        typeof context.query.productcode == "undefined" ||
-        context.query.productcode == "null"
+        typeof context.query.productcode == void 0 ||
+        context.query.productcode == 0
           ? ""
           : htmlspecialchars(context.query.productcode.toString());
       //console.log(product_add_param);
@@ -256,26 +254,34 @@ export const getServerSideProps: GetServerSideProps = withSession(
         productDeleteParam.product_code = productcode;
 
         //#region DBへproductを追加
-        // DBファイルのパスを取得
-        const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
-        const filename: string = dbFileName;
-        const fullPath: string = path.join(dbWorkDirectory, filename);
         let is_exception: boolean = false;
         try {
-          // DBオープン
-          const db = await open({
-            filename: fullPath,
-            driver: sqlite3.Database,
-          });
-          //db.serialize();
+          // // DBオープン
+          // const db = await open({
+          //   filename: fullPath,
+          //   driver: sqlite3.Database,
+          // });
+          // //db.serialize();
 
-          const product: {
+          // const product: {
+          //   name: string;
+          //   gazou: string;
+          // }[] = await db.all(
+          //   `SELECT name,gazou FROM mst_product WHERE code=${productcode}`
+          // );
+          // // console.log(product);
+
+          //#region DBアクセス
+          const sql = `SELECT name,gazou FROM mst_product WHERE code=${productcode}`;
+          const raw_product: {
             name: string;
             gazou: string;
-          }[] = await db.all(
-            `SELECT name,gazou FROM mst_product WHERE code=${productcode}`
-          );
-          // console.log(product);
+          }[] = await db.query(sql);
+          //#endregion DBアクセス
+
+          // RowDataPacket型からplain dataに変換
+          const product = JSON.parse(JSON.stringify(raw_product));
+
           if (product.length == 1) {
             const product_name = product[0].name;
             const product_image = product[0].gazou;

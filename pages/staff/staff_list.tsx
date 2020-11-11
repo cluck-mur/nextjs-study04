@@ -7,17 +7,15 @@ import React from "react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
-import sqlite3 from "sqlite3";
-import { open } from "sqlite";
 import path from "path";
 import {
-  dbFilePath,
-  dbFileName,
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";
 import withSession from "../../lib/session";
 import { msgYouHaveNotLogin } from "../../lib/global_const";
+import db from "../../lib/db";
+import { SQL } from "sql-template-strings";
 
 type StaffListParam = {
   login: string;
@@ -46,9 +44,7 @@ const GenSelectStaffFormChildren = (staffListParam: StaffListParam) => {
       <React.Fragment key={staff.code.toString()}>
         <input type="radio" name="staffcode" value={staff.code} />
         {staff.code}: {staff.name}
-        {staff.is_master == true && (
-          "(マスター管理者)"
-        )}
+        {staff.is_master == true && "(マスター管理者)"}
         <br />
       </React.Fragment>
     );
@@ -109,8 +105,8 @@ const StaffList = (staffListParam: StaffListParam) => {
             <br />
             <b>既存スタッフ 参照・修正・削除</b>
             <br />
-          ※スタッフを選択し、操作したいボタンを押してください。
-          <br />
+            ※スタッフを選択し、操作したいボタンを押してください。
+            <br />
             <br />
             {GenSelectStaffFormChildren(staffListParam)}
             <input key="disp" type="submit" name="disp" value="参照" />
@@ -129,7 +125,7 @@ const StaffList = (staffListParam: StaffListParam) => {
       //#endregion エラーメッセージを表示
     }
   }
-  
+
   return <React.Fragment>{items}</React.Fragment>;
 };
 
@@ -164,24 +160,21 @@ export const getServerSideProps: GetServerSideProps = withSession(
     }
 
     //#region DBへstaffを追加
-    // DBファイルのパスを取得
-    const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
-    const filename: string = dbFileName;
-    const fullPath: string = path.join(dbWorkDirectory, filename);
-
     try {
-      // DBオープン
-      const db = await open({
-        filename: fullPath,
-        driver: sqlite3.Database,
-      });
-      //db.serialize();
+      //#region DBアクセス
+      const sql = `SELECT code,name,is_master FROM mst_staff WHERE 1`;
+      const raw_staffs: {
+        code: string;
+        name: string;
+        is_master: boolean;
+      }[] = await db.query(sql);
+      //#endregion DBアクセス
 
-      const staffs = await db.all("SELECT code,name,is_master FROM mst_staff WHERE 1");
+      // RowDataPacket型からplain dataに変換
+      const staffs = JSON.parse(JSON.stringify(raw_staffs));
       staffs.map((staff) => {
         staffListParam.staffs.push(staff);
       });
-      //console.log(staffListParam);
     } catch (e) {
       is_exception = true;
     } finally {

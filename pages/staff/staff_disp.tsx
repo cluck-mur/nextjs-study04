@@ -7,13 +7,9 @@ import React from "react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import sqlite3 from "sqlite3";
-import { open } from "sqlite";
 import path from "path";
 import htmlspecialchars from "htmlspecialchars";
 import {
-  dbFilePath,
-  dbFileName,
   staffNameMaxLegth,
   msgElementSystemError,
   msgElementStaffWasNotSelected,
@@ -22,6 +18,8 @@ import {
 } from "../../lib/global_const";
 import withSession from "../../lib/session";
 import { msgYouHaveNotLogin } from "../../lib/global_const";
+import db from "../../lib/db";
+import { SQL } from "sql-template-strings";
 
 type StaffDispParam = {
   login: string;
@@ -231,22 +229,16 @@ export const getServerSideProps: GetServerSideProps = withSession(
         staffDispParam.staff_code = staffcode;
 
         //#region DBへstaffを追加
-        // DBファイルのパスを取得
-        const dbWorkDirectory = path.join(process.cwd(), dbFilePath);
-        const filename: string = dbFileName;
-        const fullPath: string = path.join(dbWorkDirectory, filename);
         let is_exception: boolean = false;
         try {
-          // DBオープン
-          const db = await open({
-            filename: fullPath,
-            driver: sqlite3.Database,
-          });
-          //db.serialize();
+          //#region DBアクセス
+          const sql = `SELECT name FROM mst_staff WHERE code=${staffcode}`;
+          const raw_staff: { name: string }[] = await db.query(sql);
+          //#endregion DBアクセス
 
-          const staff: { name: string }[] = await db.all(
-            `SELECT name FROM mst_staff WHERE code=${staffcode}`
-          );
+          // RowDataPacket型からplain dataに変換
+          const staff = JSON.parse(JSON.stringify(raw_staff));
+
           // console.log(staff);
           if (staff.length == 1) {
             const staff_name = staff[0].name;

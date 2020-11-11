@@ -329,11 +329,11 @@ export const getServerSideProps: GetServerSideProps = withSession(
               // const filename: string = image_obj.originalFilename;
               // const fullPath: string = path.join(dbWorkDirectory, filename);
               const filename: string = image_obj.originalFilename;
-              const fullPath: string = `${uploadFilePath}/${filename}`;
+              const fullPath: string = `/var/task/.next/serverless/${uploadFilePath}/${filename}`;
               console.log("fullPath: " + fullPath);
 
               console.log("ファイル一覧");
-              const readdir = fs.readdirSync(uploadFilePath);
+              const readdir = fs.readdirSync(`/var/task/.next/serverless/${uploadFilePath}`);
               console.log(readdir);
               let rs: ReadStream = null;
               let ws: WriteStream = null;

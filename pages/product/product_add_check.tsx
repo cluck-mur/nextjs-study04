@@ -325,9 +325,12 @@ export const getServerSideProps: GetServerSideProps = withSession(
             } else {
               //#region ファイルコピー処理
               // uploadファイルのパスを取得
-              const dbWorkDirectory = path.join(process.cwd(), uploadFilePath);
+              // const dbWorkDirectory = path.join(process.cwd(), uploadFilePath);
+              // const filename: string = image_obj.originalFilename;
+              // const fullPath: string = path.join(dbWorkDirectory, filename);
               const filename: string = image_obj.originalFilename;
-              const fullPath: string = path.join(dbWorkDirectory, filename);
+              const fullPath: string = `${uploadFilePath}/${filename}`;
+              console.log("fullPath: " + fullPath);
 
               let rs: ReadStream = null;
               let ws: WriteStream = null;
@@ -346,6 +349,8 @@ export const getServerSideProps: GetServerSideProps = withSession(
                 productAddCheckParam.image = image_obj.originalFilename;
                 //#endregion ファイルコピー処理
               } catch (e) {
+                console.log("Exception!!!!!");
+                console.log(e);
                 throw e;
               } finally {
                 rs.close();

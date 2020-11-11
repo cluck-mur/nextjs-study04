@@ -332,6 +332,9 @@ export const getServerSideProps: GetServerSideProps = withSession(
               const fullPath: string = `${uploadFilePath}/${filename}`;
               console.log("fullPath: " + fullPath);
 
+              console.log("ファイル一覧");
+              const readdir = fs.readdirSync(uploadFilePath);
+              console.log(readdir);
               let rs: ReadStream = null;
               let ws: WriteStream = null;
               try {

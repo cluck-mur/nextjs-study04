@@ -10,7 +10,9 @@ import { GetServerSideProps } from "next";
 import htmlspecialchars from "htmlspecialchars";
 import md5 from "md5";
 import {
-  uploadFilePath,
+  publicFolder,
+  publicRelativeFolder,
+  // uploadFilePath,
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";
@@ -20,6 +22,7 @@ import withSession from "../../lib/session";
 import { msgYouHaveNotLogin } from "../../lib/global_const";
 import fs, { ReadStream, WriteStream } from "fs";
 import path from "path";
+import getConfig from "next/config";
 
 type ProductAddCheckParam = {
   login: string;
@@ -328,13 +331,19 @@ export const getServerSideProps: GetServerSideProps = withSession(
               // const dbWorkDirectory = path.join(process.cwd(), uploadFilePath);
               // const filename: string = image_obj.originalFilename;
               // const fullPath: string = path.join(dbWorkDirectory, filename);
-              const filename: string = image_obj.originalFilename;
-              const fullPath: string = `/var/task/.next/serverless/${uploadFilePath}/${filename}`;
+              const { serverRuntimeConfig } = getConfig();
+              const fullPath = path.join(
+                serverRuntimeConfig.PROJECT_ROOT,
+                publicFolder,
+                publicRelativeFolder
+              );
               console.log("fullPath: " + fullPath);
 
-              console.log("ファイル一覧");
-              const readdir = fs.readdirSync(`/var/task/.next/serverless/${uploadFilePath}`);
-              console.log(readdir);
+              // console.log("ファイル一覧");
+              // const readdir = fs.readdirSync(
+              //   `/var/task/.next/serverless/${uploadFilePath}`
+              // );
+              // console.log(readdir);
               let rs: ReadStream = null;
               let ws: WriteStream = null;
               try {

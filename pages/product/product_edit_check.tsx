@@ -337,11 +337,16 @@ export const getServerSideProps: GetServerSideProps = withSession(
                 // const fullPath: string = path.join(dbWorkDirectory, filename);
                 const { serverRuntimeConfig } = getConfig();
                 const filename: string = image_obj.originalFilename;
-                const fullPath = path.join(
-                  serverRuntimeConfig.PROJECT_ROOT,
+                // const fullPath = path.join(
+                //   serverRuntimeConfig.PROJECT_ROOT,
+                //   publicFolder,
+                //   publicRelativeFolder,
+                //   `./${filename}`
+                // );
+                const fullPath = path.resolve(
                   publicFolder,
                   publicRelativeFolder,
-                  `./${filename}`
+                  filename
                 );
 
                 let rs: ReadStream = null;

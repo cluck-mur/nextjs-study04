@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 
 export const publicFolder: string = "./public";
-export const publicRelativeFolder: string = "./upload";
+export const publicRelativeFolder: string = "upload";
 
 export const staffNameMaxLegth: number = 14;
 export const productNameMaxLegth: number = 30;

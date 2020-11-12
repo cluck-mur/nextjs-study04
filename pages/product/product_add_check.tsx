@@ -343,11 +343,16 @@ export const getServerSideProps: GetServerSideProps = withSession(
               // join_path.push(publicRelativeFolder)
               // join_path.push(`./${filename}`)
               const filename: string = image_obj.originalFilename;
-              const fullPath = path.join(
-                serverRuntimeConfig.PROJECT_ROOT,
+              // const fullPath = path.join(
+              //   "/",
+              //   publicFolder,
+              //   publicRelativeFolder,
+              //   `./${filename}`
+              // );
+              const fullPath = path.resolve(
                 publicFolder,
                 publicRelativeFolder,
-                `./${filename}`
+                filename
               );
               console.log("fullPath: " + fullPath);
 

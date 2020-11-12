@@ -349,11 +349,15 @@ export const getServerSideProps: GetServerSideProps = withSession(
               //   publicRelativeFolder,
               //   `./${filename}`
               // );
-              const fullPath = path.resolve(
-                publicFolder,
-                publicRelativeFolder,
-                filename
-              );
+              //********
+              // const fullPath = path.resolve(
+              //   publicFolder,
+              //   publicRelativeFolder,
+              //   filename
+              // );
+              //********
+              const fullPath = `${publicFolder}/${publicRelativeFolder}/${filename}`;
+              //********
               console.log("fullPath: " + fullPath);
 
               // console.log("ファイル一覧");

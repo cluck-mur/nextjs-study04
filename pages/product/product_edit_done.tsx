@@ -215,11 +215,15 @@ export const getServerSideProps: GetServerSideProps = withSession(
               //   publicRelativeFolder,
               //   `./${filename}`
               // );
-              const fullPath = path.resolve(
-                publicFolder,
-                publicRelativeFolder,
-                filename
-              );
+              //********
+              // const fullPath = path.resolve(
+              //   publicFolder,
+              //   publicRelativeFolder,
+              //   filename
+              // );
+              //********
+              const fullPath = `${publicFolder}/${publicRelativeFolder}/${filename}`;
+              //********
 
               if (fs.existsSync(fullPath)) {
                 fs.unlinkSync(fullPath);

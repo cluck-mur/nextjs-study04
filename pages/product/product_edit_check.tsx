@@ -343,11 +343,15 @@ export const getServerSideProps: GetServerSideProps = withSession(
                 //   publicRelativeFolder,
                 //   `./${filename}`
                 // );
-                const fullPath = path.resolve(
-                  publicFolder,
-                  publicRelativeFolder,
-                  filename
-                );
+                //********
+                // const fullPath = path.resolve(
+                //   publicFolder,
+                //   publicRelativeFolder,
+                //   filename
+                // );
+                // //********
+                const fullPath = `${publicFolder}/${publicRelativeFolder}/${filename}`;
+                //********
 
                 let rs: ReadStream = null;
                 let ws: WriteStream = null;

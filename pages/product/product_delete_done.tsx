@@ -17,9 +17,15 @@ import { CompReferer } from "../../lib/myUtils";
 import { myParse, sanitizeFields } from "../../lib/myUtils";
 import withSession from "../../lib/session";
 import fs from "fs";
-import { msgYouHaveNotLogin, uploadFilePath } from "../../lib/global_const";
+import {
+  msgYouHaveNotLogin,
+  //uploadFilePath
+  publicFolder,
+  publicRelativeFolder,
+} from "../../lib/global_const";
 import db from "../../lib/db";
 import { SQL } from "sql-template-strings";
+import getConfig from "next/config";
 
 type ProductDeleteDoneParam = {
   is_exception: boolean;
@@ -183,10 +189,16 @@ export const getServerSideProps: GetServerSideProps = withSession(
           if (!(product.length > 0)) {
             // ファイルを消去する
             // uploadファイルのパスを取得
-            const dbWorkDirectory = path.join(process.cwd(), uploadFilePath);
-            const filename: string = product_image;
-            const fullPath: string = path.join(dbWorkDirectory, filename);
-            if (fs.existsSync(fullPath)) {
+            // const dbWorkDirectory = path.join(process.cwd(), uploadFilePath);
+            // const filename: string = product_image;
+            // const fullPath: string = path.join(dbWorkDirectory, filename);
+            const { serverRuntimeConfig } = getConfig();
+            const fullPath = path.join(
+              serverRuntimeConfig.PROJECT_ROOT,
+              publicFolder,
+              publicRelativeFolder
+            );
+          if (fs.existsSync(fullPath)) {
               fs.unlinkSync(fullPath);
             }
           }

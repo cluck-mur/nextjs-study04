@@ -16,10 +16,16 @@ import {
 import { CompReferer, transferImageFile } from "../../lib/myUtils";
 import { myParse, sanitizeFields } from "../../lib/myUtils";
 import withSession from "../../lib/session";
-import { msgYouHaveNotLogin, uploadFilePath } from "../../lib/global_const";
+import {
+  msgYouHaveNotLogin,
+  //uploadFilePath
+  publicFolder,
+  publicRelativeFolder,
+} from "../../lib/global_const";
 import parse, { Body } from "then-busboy";
 import fs, { ReadStream, WriteStream } from "fs";
 import path from "path";
+import getConfig from "next/config";
 
 type ProductEditCheckParam = {
   login: string;
@@ -323,13 +329,19 @@ export const getServerSideProps: GetServerSideProps = withSession(
               } else {
                 //#region ファイルコピー処理
                 // uploadファイルのパスを取得
-                const dbWorkDirectory = path.join(
-                  process.cwd(),
-                  uploadFilePath
+                // const dbWorkDirectory = path.join(
+                //   process.cwd(),
+                //   uploadFilePath
+                // );
+                // const filename: string = image_obj.originalFilename;
+                // const fullPath: string = path.join(dbWorkDirectory, filename);
+                const { serverRuntimeConfig } = getConfig();
+                const fullPath = path.join(
+                  serverRuntimeConfig.PROJECT_ROOT,
+                  publicFolder,
+                  publicRelativeFolder
                 );
-                const filename: string = image_obj.originalFilename;
-                const fullPath: string = path.join(dbWorkDirectory, filename);
-
+    
                 let rs: ReadStream = null;
                 let ws: WriteStream = null;
                 try {

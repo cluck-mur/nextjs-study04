@@ -10,9 +10,9 @@ import { GetServerSideProps } from "next";
 import htmlspecialchars from "htmlspecialchars";
 import md5 from "md5";
 import {
+  // uploadFilePath,
   publicFolder,
   publicRelativeFolder,
-  // uploadFilePath,
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";

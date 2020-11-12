@@ -208,10 +208,12 @@ export const getServerSideProps: GetServerSideProps = withSession(
               // const filename: string = product_image_old;
               // const fullPath: string = path.join(dbWorkDirectory, filename);
               const { serverRuntimeConfig } = getConfig();
+              const filename: string = product_image_old;
               const fullPath = path.join(
                 serverRuntimeConfig.PROJECT_ROOT,
                 publicFolder,
-                publicRelativeFolder
+                publicRelativeFolder,
+                `./${filename}`
               );
               if (fs.existsSync(fullPath)) {
                 fs.unlinkSync(fullPath);

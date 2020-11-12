@@ -332,10 +332,22 @@ export const getServerSideProps: GetServerSideProps = withSession(
               // const filename: string = image_obj.originalFilename;
               // const fullPath: string = path.join(dbWorkDirectory, filename);
               const { serverRuntimeConfig } = getConfig();
+              console.log(
+                "serverRuntimeConfig.PROJECT_ROOT: " +
+                  serverRuntimeConfig.PROJECT_ROOT
+              );
+              // const filename: string = image_obj.originalFilename;
+              // const join_path: string[] = [];
+              // join_path.push(serverRuntimeConfig.PROJECT_ROOT);
+              // join_path.push(publicFolder)
+              // join_path.push(publicRelativeFolder)
+              // join_path.push(`./${filename}`)
+              const filename: string = image_obj.originalFilename;
               const fullPath = path.join(
                 serverRuntimeConfig.PROJECT_ROOT,
                 publicFolder,
-                publicRelativeFolder
+                publicRelativeFolder,
+                `./${filename}`
               );
               console.log("fullPath: " + fullPath);
 

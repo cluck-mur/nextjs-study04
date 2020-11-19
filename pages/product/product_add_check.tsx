@@ -23,6 +23,7 @@ import { msgYouHaveNotLogin } from "../../lib/global_const";
 import fs, { ReadStream, WriteStream } from "fs";
 import path from "path";
 import getConfig from "next/config";
+import WebDav from "../../lib/webdav";
 
 type ProductAddCheckParam = {
   login: string;
@@ -327,38 +328,10 @@ export const getServerSideProps: GetServerSideProps = withSession(
               productAddCheckParam.is_toobig_image = true;
             } else {
               //#region ファイルコピー処理
+              const webdav = new WebDav();
+
               // uploadファイルのパスを取得
-              // const dbWorkDirectory = path.join(process.cwd(), uploadFilePath);
-              // const filename: string = image_obj.originalFilename;
-              // const fullPath: string = path.join(dbWorkDirectory, filename);
-              const { serverRuntimeConfig } = getConfig();
-              console.log(
-                "serverRuntimeConfig.PROJECT_ROOT: " +
-                  serverRuntimeConfig.PROJECT_ROOT
-              );
-              // const filename: string = image_obj.originalFilename;
-              // const join_path: string[] = [];
-              // join_path.push(serverRuntimeConfig.PROJECT_ROOT);
-              // join_path.push(publicFolder)
-              // join_path.push(publicRelativeFolder)
-              // join_path.push(`./${filename}`)
-              const filename: string = image_obj.originalFilename;
-              // const fullPath = path.join(
-              //   "/",
-              //   publicFolder,
-              //   publicRelativeFolder,
-              //   `./${filename}`
-              // );
-              //********
-              // const fullPath = path.resolve(
-              //   publicFolder,
-              //   publicRelativeFolder,
-              //   filename
-              // );
-              //********
-              const fullPath = `${publicFolder}/${publicRelativeFolder}/${filename}`;
-              //********
-              console.log("fullPath: " + fullPath);
+              const bool = await webdav.exists("/upload");
 
               // console.log("ファイル一覧");
               // const readdir = fs.readdirSync(
@@ -373,11 +346,11 @@ export const getServerSideProps: GetServerSideProps = withSession(
                 });
                 console.log("テンポラリファイル: " + body_json.image.path);
 
-                ws = fs.createWriteStream(fullPath, {
-                  autoClose: true,
-                  flags: "w",
-                });
-                console.log("書き込みファイル: " + fullPath);
+                // ws = fs.createWriteStream(fullPath, {
+                //   autoClose: true,
+                //   flags: "w",
+                // });
+                // console.log("書き込みファイル: " + fullPath);
 
                 // ファイルコピー
                 await transferImageFile(rs, ws);

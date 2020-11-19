@@ -26,6 +26,7 @@ import {
 import db from "../../lib/db";
 import { SQL } from "sql-template-strings";
 import getConfig from "next/config";
+import WebDav from "../../lib/webdav";
 
 type ProductEditDoneParam = {
   login: string;
@@ -203,30 +204,10 @@ export const getServerSideProps: GetServerSideProps = withSession(
 
             if (!(product.length > 0)) {
               // ファイルを消去する
-              // uploadファイルのパスを取得
-              // const dbWorkDirectory = path.join(process.cwd(), uploadFilePath);
-              // const filename: string = product_image_old;
-              // const fullPath: string = path.join(dbWorkDirectory, filename);
-              const { serverRuntimeConfig } = getConfig();
-              const filename: string = product_image_old;
-              // const fullPath = path.join(
-              //   serverRuntimeConfig.PROJECT_ROOT,
-              //   publicFolder,
-              //   publicRelativeFolder,
-              //   `./${filename}`
-              // );
-              //********
-              // const fullPath = path.resolve(
-              //   publicFolder,
-              //   publicRelativeFolder,
-              //   filename
-              // );
-              //********
-              const fullPath = `${publicFolder}/${publicRelativeFolder}/${filename}`;
-              //********
-
-              if (fs.existsSync(fullPath)) {
-                fs.unlinkSync(fullPath);
+              const webdav = new WebDav();
+              const fullPath = `/upload/${product_image_old}`;
+              if (await webdav.exists(fullPath)) {
+                await webdav.deleteFile(fullPath);
               }
             }
           }

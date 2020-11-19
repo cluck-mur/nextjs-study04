@@ -16,10 +16,10 @@ import {
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";
-import { CompReferer, transferImageFile } from "../../lib/myUtils";
+import { CompReferer } from "../../lib/myUtils";
 import { myParse, sanitizeFields } from "../../lib/myUtils";
 import withSession from "../../lib/session";
-import { msgYouHaveNotLogin } from "../../lib/global_const";
+import { msgYouHaveNotLogin, imageServer1stPath } from "../../lib/global_const";
 import fs, { ReadStream, WriteStream } from "fs";
 import path from "path";
 import getConfig from "next/config";
@@ -181,8 +181,15 @@ const ProductAddCheck = (productAddCheckParam: ProductAddCheckParam) => {
               {product_image == void 0 || product_image == "" ? (
                 <img src="/now_printing.png" />
               ) : (
+                // let remort_path = `/upload/${product_image}`;
                 <p style={{ width: "150px", height: "150px" }}>
-                  <img width="100%" src={"/upload/" + product_image} />
+                  {/* <img width="100%" src={"/upload/" + product_image} /> */}
+                  <img
+                    width="100%"
+                    src={`${imageServer1stPath}${product_image}?path=${encodeURIComponent(
+                      "/upload/" + product_image
+                    )}`}
+                  />
                 </p>
               )}
               <br />
@@ -333,23 +340,27 @@ export const getServerSideProps: GetServerSideProps = withSession(
               let rs: ReadStream = null;
               let ws: WriteStream = null;
               try {
-                // rs = fs.createReadStream(body_json.image.path, {
-                //   autoClose: true,
-                // });
-                // console.log("テンポラリファイル: " + body_json.image.path);
-
+                // アップロード先のパス
                 const fullPath = `/upload/${image_obj.originalFilename}`;
-                ws = await webdav.createWriteStream(fullPath);
+
+                // 既にファイルがあったら一旦削除
+                if (await webdav.exists(fullPath)) {
+                  await webdav.deleteFile(fullPath);
+                }
+
+                // ライトストリーム
+                ws = await webdav.createWriteStream(fullPath, { flags: "w" });
                 console.log("書き込みファイル: " + fullPath);
 
-                // ファイルコピー
-                // await transferImageFile(rs, ws);
-                fs.createReadStream(body_json.image.path, {
+                // リードストリーム
+                rs = fs.createReadStream(body_json.image.path, {
                   autoClose: true,
-                }).pipe(
-                  await webdav.createWriteStream(fullPath, { flags: "w" })
-                );
-                console.log("テンポラリファイル: " + body_json.image.path);
+                });
+                console.log("読み込みファイル: " + body_json.image.path);
+
+                // コピー
+                //rs.pipe(ws);
+                await WebDav.copyTo(rs, ws);
 
                 productAddCheckParam.image = image_obj.originalFilename;
                 //#endregion ファイルコピー処理
@@ -360,6 +371,8 @@ export const getServerSideProps: GetServerSideProps = withSession(
               } finally {
                 // rs.close();
                 // ws.close();
+                rs.destroy();
+                ws.end();
               }
             }
           } else {

@@ -17,7 +17,7 @@ import {
   msgElementProductWasMultipleExisted,
 } from "../../lib/global_const";
 import withSession from "../../lib/session";
-import { msgYouHaveNotLogin } from "../../lib/global_const";
+import { msgYouHaveNotLogin, imageServer1stPath } from "../../lib/global_const";
 import db from "../../lib/db";
 import { SQL } from "sql-template-strings";
 
@@ -170,7 +170,13 @@ const ProductEdit = (productDeleteParam: ProductDeleteParam) => {
                 <img src="/now_printing.png" />
               ) : (
                 <p style={{ width: "150px", height: "150px" }}>
-                  <img width="100%" src={"/upload/" + product_image} />
+                  {/* <img width="100%" src={"/upload/" + product_image} /> */}
+                  <img
+                    width="100%"
+                    src={`${imageServer1stPath}${product_image}?path=${encodeURIComponent(
+                      "/upload/" + product_image
+                    )}`}
+                  />
                 </p>
               )}
               <br />

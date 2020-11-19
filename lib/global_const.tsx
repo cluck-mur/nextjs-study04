@@ -71,3 +71,5 @@ export const msgYouHaveNotLogin = (
     </Link>
   </React.Fragment>
 );
+
+export const imageServer1stPath = "https://app.koofr.net/content/api/v2/mounts/3f0fbfa7-c320-4596-a2e9-392cc6520302/files/get/"

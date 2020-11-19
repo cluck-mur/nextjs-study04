@@ -50,18 +50,18 @@ export const CompReferer = (
   return referer_cuthttp[1].startsWith(compare_str);
 };
 
-/**
- * イメージファイルコピー
- * @param rs
- * @param ws
- */
-export const transferImageFile = async (rs: ReadStream, ws: WriteStream) => {
-  console.log("transferImageFileに来た");
-  for await (const chunk of rs) {
-    console.log("wsへ書き込み");
-    await ws.write(chunk);
-  }
-};
+// /**
+//  * イメージファイルコピー
+//  * @param rs
+//  * @param ws
+//  */
+// export const transferImageFile = async (rs: ReadStream, ws: WriteStream) => {
+//   console.log("transferImageFileに来た");
+//   for await (const chunk of rs) {
+//     console.log("wsへ書き込み");
+//     await ws.write(chunk);
+//   }
+// };
 
 /**
  * POST Bodyをパースする

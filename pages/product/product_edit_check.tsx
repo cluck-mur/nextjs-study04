@@ -13,7 +13,7 @@ import {
   msgElementHttpReqError,
   msgElementSystemError,
 } from "../../lib/global_const";
-import { CompReferer, transferImageFile } from "../../lib/myUtils";
+import { CompReferer } from "../../lib/myUtils";
 import { myParse, sanitizeFields } from "../../lib/myUtils";
 import withSession from "../../lib/session";
 import {
@@ -21,11 +21,13 @@ import {
   //uploadFilePath
   publicFolder,
   publicRelativeFolder,
+  imageServer1stPath,
 } from "../../lib/global_const";
 import parse, { Body } from "then-busboy";
 import fs, { ReadStream, WriteStream } from "fs";
 import path from "path";
 import getConfig from "next/config";
+import WebDav from "../../lib/webdav";
 
 type ProductEditCheckParam = {
   login: string;
@@ -158,7 +160,13 @@ const ProductEditCheck = (productEditCheckParam: ProductEditCheckParam) => {
                 <img src="/now_printing.png" />
               ) : (
                 <p style={{ width: "150px", height: "150px" }}>
-                  <img width="100%" src={"/upload/" + product_image} />
+                  {/* <img width="100%" src={"/upload/" + product_image} /> */}
+                  <img
+                    width="100%"
+                    src={`${imageServer1stPath}${product_image}?path=${encodeURIComponent(
+                      "/upload/" + product_image
+                    )}`}
+                  />
                 </p>
               )}
               <form method="post" action={next_page}>
@@ -328,52 +336,44 @@ export const getServerSideProps: GetServerSideProps = withSession(
                 productEditCheckParam.is_toobig_image = true;
               } else {
                 //#region ファイルコピー処理
-                // uploadファイルのパスを取得
-                // const dbWorkDirectory = path.join(
-                //   process.cwd(),
-                //   uploadFilePath
-                // );
-                // const filename: string = image_obj.originalFilename;
-                // const fullPath: string = path.join(dbWorkDirectory, filename);
-                const { serverRuntimeConfig } = getConfig();
-                const filename: string = image_obj.originalFilename;
-                // const fullPath = path.join(
-                //   serverRuntimeConfig.PROJECT_ROOT,
-                //   publicFolder,
-                //   publicRelativeFolder,
-                //   `./${filename}`
-                // );
-                //********
-                // const fullPath = path.resolve(
-                //   publicFolder,
-                //   publicRelativeFolder,
-                //   filename
-                // );
-                // //********
-                const fullPath = `${publicFolder}/${publicRelativeFolder}/${filename}`;
-                //********
+                const webdav = new WebDav();
 
                 let rs: ReadStream = null;
                 let ws: WriteStream = null;
                 try {
+                  // アップロード先のパス
+                  const fullPath = `/upload/${image_obj.originalFilename}`;
+  
+                  // 既にファイルがあったら一旦削除
+                  if (await webdav.exists(fullPath)) {
+                    await webdav.deleteFile(fullPath);
+                  }
+  
+                  // ライトストリーム
+                  ws = await webdav.createWriteStream(fullPath, { flags: "w" });
+                  console.log("書き込みファイル: " + fullPath);
+  
+                  // リードストリーム
                   rs = fs.createReadStream(body_json.image.path, {
                     autoClose: true,
                   });
-                  ws = fs.createWriteStream(fullPath, {
-                    autoClose: true,
-                    flags: "w",
-                  });
-
-                  // ファイルコピー
-                  await transferImageFile(rs, ws);
-
+                  console.log("読み込みファイル: " + body_json.image.path);
+  
+                  // コピー
+                  //rs.pipe(ws);
+                  await WebDav.copyTo(rs, ws);
+  
                   productEditCheckParam.image = image_obj.originalFilename;
                   //#endregion ファイルコピー処理
                 } catch (e) {
+                  console.log("Exception!!!!!");
+                  console.log(e);
                   throw e;
                 } finally {
-                  rs.close();
-                  ws.close();
+                  // rs.close();
+                  // ws.close();
+                  rs.destroy();
+                  ws.end();
                 }
               }
             } else {

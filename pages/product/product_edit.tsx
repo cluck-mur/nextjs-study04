@@ -17,7 +17,7 @@ import {
   msgElementProductWasMultipleExisted,
 } from "../../lib/global_const";
 import withSession from "../../lib/session";
-import { msgYouHaveNotLogin } from "../../lib/global_const";
+import { msgYouHaveNotLogin, imageServer1stPath } from "../../lib/global_const";
 import db from "../../lib/db";
 import { SQL } from "sql-template-strings";
 
@@ -127,7 +127,11 @@ const ProductEdit = (productEditParam: ProductEditParam) => {
         <br />
         {productEditParam.product_code}
         <br /> */}
-            <form method="post" action={next_page} encType="multipart/form-data">
+            <form
+              method="post"
+              action={next_page}
+              encType="multipart/form-data"
+            >
               <b>商品コード</b>
               <br />
               {/* <input type="hidden" name="code" value={productEditParam.product_code} /> */}
@@ -167,9 +171,16 @@ const ProductEdit = (productEditParam: ProductEditParam) => {
               <br />
               <b>画像を変更する</b>
               <br />
-              <input type="radio" name="imagechange" value="no" defaultChecked={true} />いいえ
+              <input
+                type="radio"
+                name="imagechange"
+                value="no"
+                defaultChecked={true}
+              />
+              いいえ
               <br />
-              <input type="radio" name="imagechange" value="yes" />はい
+              <input type="radio" name="imagechange" value="yes" />
+              はい
               <br />
               <b>現在の画像</b>
               <br />
@@ -185,7 +196,13 @@ const ProductEdit = (productEditParam: ProductEditParam) => {
                 <img src="/now_printing.png" />
               ) : (
                 <p style={{ width: "150px", height: "150px" }}>
-                  <img width="100%" src={"/upload/" + product_image_old} />
+                  {/* <img width="100%" src={"/upload/" + product_image_old} /> */}
+                  <img
+                    width="100%"
+                    src={`${imageServer1stPath}${product_image}?path=${encodeURIComponent(
+                      "/upload/" + product_image_old
+                    )}`}
+                  />
                 </p>
               )}
               <br />

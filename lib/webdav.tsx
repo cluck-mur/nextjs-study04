@@ -97,7 +97,10 @@ export default class WebDav {
    *
    * @param path
    */
-  public async createWriteStream(path: string, object = null): Promise<WriteStream> {
+  public async createWriteStream(
+    path: string,
+    object = null
+  ): Promise<WriteStream> {
     let fs: WriteStream = await this.client.createWriteStream(path, object);
     return fs;
   }
@@ -282,5 +285,16 @@ export default class WebDav {
   public async customRequest(path: string, object): Promise<any> {
     let contents = await this.client.customRequest(path, object);
     return contents;
+  }
+
+  /**
+   * イメージファイルコピー
+   * @param rs
+   * @param ws
+   */
+  static async copyTo(rs: ReadStream, ws: WriteStream) {
+    for await (const chunk of rs) {
+      await ws.write(chunk);
+    }
   }
 }

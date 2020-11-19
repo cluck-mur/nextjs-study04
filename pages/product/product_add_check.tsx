@@ -330,30 +330,26 @@ export const getServerSideProps: GetServerSideProps = withSession(
               //#region ファイルコピー処理
               const webdav = new WebDav();
 
-              // uploadファイルのパスを取得
-              const bool = await webdav.exists("/upload");
-
-              // console.log("ファイル一覧");
-              // const readdir = fs.readdirSync(
-              //   `/var/task/.next/serverless/${uploadFilePath}`
-              // );
-              // console.log(readdir);
               let rs: ReadStream = null;
               let ws: WriteStream = null;
               try {
-                rs = fs.createReadStream(body_json.image.path, {
-                  autoClose: true,
-                });
-                console.log("テンポラリファイル: " + body_json.image.path);
-
-                // ws = fs.createWriteStream(fullPath, {
+                // rs = fs.createReadStream(body_json.image.path, {
                 //   autoClose: true,
-                //   flags: "w",
                 // });
-                // console.log("書き込みファイル: " + fullPath);
+                // console.log("テンポラリファイル: " + body_json.image.path);
+
+                const fullPath = `/upload/${image_obj.originalFilename}`;
+                ws = await webdav.createWriteStream(fullPath);
+                console.log("書き込みファイル: " + fullPath);
 
                 // ファイルコピー
-                await transferImageFile(rs, ws);
+                // await transferImageFile(rs, ws);
+                fs.createReadStream(body_json.image.path, {
+                  autoClose: true,
+                }).pipe(
+                  await webdav.createWriteStream(fullPath, { flags: "w" })
+                );
+                console.log("テンポラリファイル: " + body_json.image.path);
 
                 productAddCheckParam.image = image_obj.originalFilename;
                 //#endregion ファイルコピー処理
@@ -362,8 +358,8 @@ export const getServerSideProps: GetServerSideProps = withSession(
                 console.log(e);
                 throw e;
               } finally {
-                rs.close();
-                ws.close();
+                // rs.close();
+                // ws.close();
               }
             }
           } else {

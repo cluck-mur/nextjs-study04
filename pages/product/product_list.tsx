@@ -34,7 +34,7 @@ const next_page: string = "/product/product_branch";
 // const redirect_page: string = "/product/product_list";
 
 /**
- * スタッフ選択フォームを生成
+ * 商品選択フォームを生成
  * @param ProductListParam
  */
 const GenSelectProductFormChildren = (ProductListParam: ProductListParam) => {

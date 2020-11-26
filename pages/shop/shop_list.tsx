@@ -65,7 +65,7 @@ const ShopList = (shopListParam: ShopListParam) => {
     <React.Fragment>
       <Head>
         <meta charSet="UTF-8" />
-        <title>ろくまる農園 商品管理メニュー</title>
+        <title>ろくまる農園 ショッピング 商品一覧</title>
       </Head>
       {
         /* ログインしていたら */

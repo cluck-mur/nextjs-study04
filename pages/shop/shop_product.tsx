@@ -6,6 +6,7 @@
 import React from "react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import path from "path";
 import htmlspecialchars from "htmlspecialchars";
@@ -17,17 +18,14 @@ import {
   msgElementProductWasMultipleExisted,
 } from "../../lib/global_const";
 import withSession from "../../lib/session";
-import {
-  msgYouHaveNotLogin,
-  imageServer1stPath,
-} from "../../lib/global_const";
+import { msgYouHaveNotLogin, imageServer1stPath } from "../../lib/global_const";
 import db from "../../lib/db";
 import { SQL } from "sql-template-strings";
 
-type ProductDispParam = {
+type ShopProductParam = {
   login: string;
-  login_staff_code: string;
-  login_staff_name: string;
+  login_customer_code: string;
+  login_customer_name: string;
   is_null_productcode: boolean;
   is_noexist_productcode: boolean;
   is_multipleexist_productcode: boolean;
@@ -38,20 +36,19 @@ type ProductDispParam = {
   product_image: string;
 };
 
-const next_page: string = "/product/product_list";
-const previous_page: string = "/product/product_list";
-const redirect_page: string = "/product/product_list";
-//const return_page: string = "/product/product_list";
+const next_page: string = "/shop/shop_list";
+const previous_page: string = "/shop/shop_list";
+const redirect_page: string = "/shop/shop_list";
 
 /**
  * 商品修正
  * @param productDispParam
  */
-const ProductDisp = (productDispParam: ProductDispParam) => {
+const ShopProduct = (shopProductParam: ShopProductParam) => {
   //#region 前画面からデータを受け取る
-  const product_name = productDispParam.product_name;
-  const product_price = productDispParam.product_price;
-  const product_image = productDispParam.product_image;
+  const product_name = shopProductParam.product_name;
+  const product_price = shopProductParam.product_price;
+  const product_image = shopProductParam.product_image;
   const router = useRouter();
   //#endregion 前画面からデータを受け取る
 
@@ -60,78 +57,88 @@ const ProductDisp = (productDispParam: ProductDispParam) => {
     <React.Fragment>
       <Head>
         <meta charSet="UTF-8" />
-        <title>ろくまる農園 商品参照</title>
+        <title>ろくまる農園 商品詳細情報</title>
       </Head>
       {
         /* ログインしていたら */
-        productDispParam.login != void 0 && (
+        shopProductParam.login != void 0 ? (
           <React.Fragment>
-            {productDispParam.login_staff_name}さん ログイン中
+            ようこそ {shopProductParam.login_customer_name} 様
             <br />
+            <Link href="member_logout">
+              <a>ログアウト</a>
+            </Link>
+            <br />
+            <br />
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
+            ようこそ ゲスト 様
+            <br />
+            <Link href="member_login">
+              <a>会員ログイン</a>
+            </Link>
+            <br />
+            {/* <br /> */}
           </React.Fragment>
         )
       }
-      <h2>商品参照</h2>
+      <h2>商品詳細情報</h2>
     </React.Fragment>
   );
 
-  if (productDispParam.login == void 0) {
-    // ログインしていなかったら
-    // 未ログインメッセージを表示
-    items.push(msgYouHaveNotLogin);
-  } else {
-    if (!productDispParam.is_exception) {
-      if (productDispParam.is_null_productcode) {
-        items.push(msgElementProductWasNotSelected);
-        items.push(
-          <React.Fragment>
-            <br />
-            <input
-              type="button"
-              onClick={() => router.push(redirect_page)}
-              value="戻る"
-            />
-          </React.Fragment>
-        );
-      } else if (productDispParam.is_noexist_productcode) {
-        items.push(msgElementProductWasNotExisted);
-        items.push(
-          <React.Fragment>
-            <br />
-            商品コード: {productDispParam.product_code}
-            <br />
-            <input
-              type="button"
-              onClick={() => router.push(redirect_page)}
-              value="戻る"
-            />
-          </React.Fragment>
-        );
-      } else if (productDispParam.is_multipleexist_productcode) {
-        items.push(msgElementProductWasMultipleExisted);
-        items.push(
-          <React.Fragment>
-            <br />
-            商品コード: {productDispParam.product_code}
-            <br />
-            <input
-              type="button"
-              onClick={() => router.push(redirect_page)}
-              value="戻る"
-            />
-          </React.Fragment>
-        );
-      } else {
-        items.push(
-          <React.Fragment>
-            {/* 商品コード
+  if (!shopProductParam.is_exception) {
+    if (shopProductParam.is_null_productcode) {
+      items.push(msgElementProductWasNotSelected);
+      items.push(
+        <React.Fragment>
+          <br />
+          <input
+            type="button"
+            onClick={() => router.push(redirect_page)}
+            value="戻る"
+          />
+        </React.Fragment>
+      );
+    } else if (shopProductParam.is_noexist_productcode) {
+      items.push(msgElementProductWasNotExisted);
+      items.push(
+        <React.Fragment>
+          <br />
+          商品コード: {shopProductParam.product_code}
+          <br />
+          <input
+            type="button"
+            onClick={() => router.push(redirect_page)}
+            value="戻る"
+          />
+        </React.Fragment>
+      );
+    } else if (shopProductParam.is_multipleexist_productcode) {
+      items.push(msgElementProductWasMultipleExisted);
+      items.push(
+        <React.Fragment>
+          <br />
+          商品コード: {shopProductParam.product_code}
+          <br />
+          <input
+            type="button"
+            onClick={() => router.push(redirect_page)}
+            value="戻る"
+          />
+        </React.Fragment>
+      );
+    } else {
+      items.push(
+        <React.Fragment>
+          {/* 商品コード
         <br />
         {productDispParam.product_code}
         <br /> */}
-            {/* <form method="post" action={next_page}> */}
-            <b>商品コード</b>
-            <br />
-            {/* <input
+          {/* <form method="post" action={next_page}> */}
+          <b>商品コード</b>
+          <br />
+          {/* <input
               type="text"
               name="code"
               width="200px"
@@ -139,11 +146,11 @@ const ProductDisp = (productDispParam: ProductDispParam) => {
               style={{ background: "#dddddd" }}
               defaultValue={productDispParam.product_code}
             /> */}
-            {productDispParam.product_code}
-            <br />
-            <b>商品名</b>
-            <br />
-            {/* <input
+          {shopProductParam.product_code}
+          <br />
+          <b>商品名</b>
+          <br />
+          {/* <input
               type="text"
               name="name"
               width="200px"
@@ -153,11 +160,11 @@ const ProductDisp = (productDispParam: ProductDispParam) => {
               defaultValue={product_name}
               //onChange={onChangeEvent}
             /> */}
-            {product_name}
-            <br />
-            <b>価格</b>
-            <br />
-            {/* <input
+          {product_name}
+          <br />
+          <b>価格</b>
+          <br />
+          {/* <input
               type="text"
               name="name"
               width="200px"
@@ -167,12 +174,12 @@ const ProductDisp = (productDispParam: ProductDispParam) => {
               defaultValue={product_price}
               //onChange={onChangeEvent}
             /> */}
-            {product_price}
-            円
-            <br />
-            <b>画像</b>
-            <br />
-            {/* <input
+          {product_price}
+          円
+          <br />
+          <b>画像</b>
+          <br />
+          {/* <input
               type="text"
               name="name"
               width="200px"
@@ -182,34 +189,34 @@ const ProductDisp = (productDispParam: ProductDispParam) => {
               defaultValue={product_price}
               //onChange={onChangeEvent}
             /> */}
-            {product_image == void 0 || product_image == "" ? (
-              <img src="/now_printing.png" />
-            ) : (
-              <p style={{ width: "150px", height: "150px" }}>
-                {/* <img width="100%" src={"/upload/" + product_image} /> */}
-                <img
-                  width="100%"
-                  src={`${imageServer1stPath}${product_image}?path=${encodeURIComponent(
-                    "/upload/" + product_image
-                  )}`}
-                />
-              </p>
-            )}
-            <br />
-            <br />
-            <input type="button" onClick={() => router.back()} value="戻る" />
-            {/* <input type="submit" value="OK" />
+          {product_image == void 0 || product_image == "" ? (
+            <img src="/now_printing.png" />
+          ) : (
+            <p style={{ width: "150px", height: "150px" }}>
+              {/* <img width="100%" src={"/upload/" + product_image} /> */}
+              <img
+                width="100%"
+                src={`${imageServer1stPath}${product_image}?path=${encodeURIComponent(
+                  "/upload/" + product_image
+                )}`}
+              />
+            </p>
+          )}
+          <br />
+          <br />
+          <input type="button" onClick={() => router.push(`shop_cartin?productcode=${shopProductParam.product_code}`)} value="カートに入れる" />
+          <input type="button" onClick={() => router.back()} value="戻る" />
+          {/* <input type="submit" value="OK" />
           </form> */}
-          </React.Fragment>
-        );
-      }
-    } else {
-      //#region エラーメッセージを表示
-      if (productDispParam.is_exception) {
-        items.push(msgElementSystemError);
-      }
-      //#endregion エラーメッセージを表示
+        </React.Fragment>
+      );
     }
+  } else {
+    //#region エラーメッセージを表示
+    if (shopProductParam.is_exception) {
+      items.push(msgElementSystemError);
+    }
+    //#endregion エラーメッセージを表示
   }
 
   return <React.Fragment>{items}</React.Fragment>;
@@ -230,10 +237,10 @@ export const getServerSideProps: GetServerSideProps = withSession(
     const refcomp_result = true;
     //#endregion refererチェック
 
-    let productDispParam: ProductDispParam = {
+    let shopProductParam: ShopProductParam = {
       login: null,
-      login_staff_code: "",
-      login_staff_name: "",
+      login_customer_code: "",
+      login_customer_name: "",
       is_null_productcode: false,
       is_noexist_productcode: false,
       is_multipleexist_productcode: false,
@@ -249,18 +256,19 @@ export const getServerSideProps: GetServerSideProps = withSession(
 
     if (refcomp_result) {
       // ログインチェック
-      const login = req.session.get("login");
+      const login = req.session.get("member_login");
       if (login != void 0) {
         // ログイン済みだったら
-        productDispParam.login = login;
-        productDispParam.login_staff_code = req.session.get("staff_code");
-        productDispParam.login_staff_name = req.session.get("staff_name");
-      } else {
-        // 未ログインだったら
-        return { props: productDispParam };
+        shopProductParam.login = login;
+        shopProductParam.login_customer_code = req.session.get("member_code");
+        shopProductParam.login_customer_name = req.session.get("menber_name");
+        // } else {
+        //   // 未ログインだったら
+        //   return { props: shopProductParam };
+        // }
       }
 
-      //#region POSTメッセージからパラメータを取得する
+      //#region GETメッセージからパラメータを取得する
       //console.log(context.query);
       // const body = await getRawBody(context.req);
       // const body_string = body.toString();
@@ -272,10 +280,10 @@ export const getServerSideProps: GetServerSideProps = withSession(
           ? ""
           : htmlspecialchars(context.query.productcode.toString());
       //console.log(product_add_param);
-      //#endregion POSTメッセージからパラメータを取得する
+      //#endregion GETメッセージからパラメータを取得する
 
       if (productcode != "") {
-        productDispParam.product_code = productcode;
+        shopProductParam.product_code = productcode;
 
         //#region DBへproductを追加
         let is_exception: boolean = false;
@@ -299,25 +307,25 @@ export const getServerSideProps: GetServerSideProps = withSession(
               product[0].price == "undefined" ? "" : product[0].price;
             const product_image =
               product[0].gazou == "undefined" ? "" : product[0].gazou;
-            productDispParam.product_name = htmlspecialchars(product_name);
-            productDispParam.product_price = htmlspecialchars(product_price);
-            productDispParam.product_image = htmlspecialchars(product_image);
+            shopProductParam.product_name = htmlspecialchars(product_name);
+            shopProductParam.product_price = htmlspecialchars(product_price);
+            shopProductParam.product_image = htmlspecialchars(product_image);
           } else if (product.length < 1) {
-            productDispParam.is_noexist_productcode = true;
+            shopProductParam.is_noexist_productcode = true;
           } else {
-            productDispParam.is_multipleexist_productcode = true;
+            shopProductParam.is_multipleexist_productcode = true;
           }
         } catch (e) {
           is_exception = true;
         } finally {
-          productDispParam.is_exception = is_exception;
+          shopProductParam.is_exception = is_exception;
         }
       } else {
-        productDispParam.is_null_productcode = true;
+        shopProductParam.is_null_productcode = true;
       }
       //#endregion DBへproductを追加
       return {
-        props: productDispParam,
+        props: shopProductParam,
       };
     } else {
       if (context.res) {
@@ -330,4 +338,4 @@ export const getServerSideProps: GetServerSideProps = withSession(
   }
 );
 
-export default ProductDisp;
+export default ShopProduct;

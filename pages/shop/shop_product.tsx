@@ -1,6 +1,6 @@
 /***************************************************
  *
- * 商品参照画面
+ * ショップ 商品詳細画面
  *
  ***************************************************/
 import React from "react";
@@ -275,8 +275,8 @@ export const getServerSideProps: GetServerSideProps = withSession(
       // const body_json = formUrlDecoded(body_string);
       //console.log(body_json)
       const productcode: string =
-        typeof context.query.productcode == "undefined" ||
-        context.query.productcode == "null"
+        typeof context.query.productcode == void 0 ||
+        context.query.productcode.length == 0
           ? ""
           : htmlspecialchars(context.query.productcode.toString());
       //console.log(product_add_param);

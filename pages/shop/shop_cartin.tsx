@@ -1,6 +1,6 @@
 /***************************************************
  *
- * 商品参照画面
+ * ショップ カートに入れる画面
  *
  ***************************************************/
 import React from "react";
@@ -22,7 +22,7 @@ import { msgYouHaveNotLogin, imageServer1stPath } from "../../lib/global_const";
 import db from "../../lib/db";
 import { SQL } from "sql-template-strings";
 
-type ShopProductParam = {
+type ShopCartinParam = {
   login: string;
   login_customer_code: string;
   login_customer_name: string;
@@ -44,11 +44,11 @@ const redirect_page: string = "/shop/shop_list";
  * 商品修正
  * @param productDispParam
  */
-const ShopProduct = (shopProductParam: ShopProductParam) => {
+const ShopCartin = (shopCartinParam: ShopCartinParam) => {
   //#region 前画面からデータを受け取る
-  // const product_name = shopProductParam.product_name;
-  // const product_price = shopProductParam.product_price;
-  // const product_image = shopProductParam.product_image;
+  // const product_name = shopCartinParam.product_name;
+  // const product_price = shopCartinParam.product_price;
+  // const product_image = shopCartinParam.product_image;
   const router = useRouter();
   //#endregion 前画面からデータを受け取る
 
@@ -61,9 +61,9 @@ const ShopProduct = (shopProductParam: ShopProductParam) => {
       </Head>
       {
         /* ログインしていたら */
-        shopProductParam.login != void 0 ? (
+        shopCartinParam.login != void 0 ? (
           <React.Fragment>
-            ようこそ {shopProductParam.login_customer_name} 様
+            ようこそ {shopCartinParam.login_customer_name} 様
             <br />
             <Link href="member_logout">
               <a>ログアウト</a>
@@ -87,7 +87,7 @@ const ShopProduct = (shopProductParam: ShopProductParam) => {
     </React.Fragment>
   );
 
-  if (shopProductParam.is_null_productcode) {
+  if (shopCartinParam.is_null_productcode) {
     items.push(msgElementProductWasNotSelected);
     items.push(
       <React.Fragment>
@@ -130,7 +130,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
     const refcomp_result = true;
     //#endregion refererチェック
 
-    let shopProductParam: ShopProductParam = {
+    let shopCartinParam: ShopCartinParam = {
       login: null,
       login_customer_code: "",
       login_customer_name: "",
@@ -152,12 +152,12 @@ export const getServerSideProps: GetServerSideProps = withSession(
       const login = req.session.get("member_login");
       if (login != void 0) {
         // ログイン済みだったら
-        shopProductParam.login = login;
-        shopProductParam.login_customer_code = req.session.get("member_code");
-        shopProductParam.login_customer_name = req.session.get("menber_name");
+        shopCartinParam.login = login;
+        shopCartinParam.login_customer_code = req.session.get("member_code");
+        shopCartinParam.login_customer_name = req.session.get("menber_name");
         // } else {
         //   // 未ログインだったら
-        //   return { props: shopProductParam };
+        //   return { props: shopCartinParam };
         // }
       }
 
@@ -179,7 +179,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
 
       //#region カートに入れる
       if (productcode != "") {
-        shopProductParam.product_code = productcode;
+        shopCartinParam.product_code = productcode;
 
         let cart: string[] = req.session.get("cart");
         if (cart == void 0) {
@@ -198,12 +198,12 @@ export const getServerSideProps: GetServerSideProps = withSession(
         // //#endregion debug
 
       } else {
-        shopProductParam.is_null_productcode = true;
+        shopCartinParam.is_null_productcode = true;
       }
       //#endregion カートに入れる
 
       return {
-        props: shopProductParam,
+        props: shopCartinParam,
       };
     } else {
       if (context.res) {
@@ -216,4 +216,4 @@ export const getServerSideProps: GetServerSideProps = withSession(
   }
 );
 
-export default ShopProduct;
+export default ShopCartin;

@@ -1,6 +1,6 @@
 /***************************************************
  *
- * 商品一覧画面（ショップポータル画面）
+ * ショップ 商品一覧画面
  *
  ***************************************************/
 import React from "react";
@@ -43,8 +43,8 @@ const GenSelectProductFormChildren = (ShopListParam: ShopListParam) => {
     items.push(
       <React.Fragment key={product.code.toString()}>
         <Link href={`shop_product?productcode=${product.code.toString()}`}>
-        {/* <Link href={`shop_product/${product.code.toString()}`}> */}
-        <a>
+          {/* <Link href={`shop_product/${product.code.toString()}`}> */}
+          <a>
             {product.name}({product.price}円)
           </a>
         </Link>
@@ -91,6 +91,10 @@ const ShopList = (shopListParam: ShopListParam) => {
           </React.Fragment>
         )
       }
+      <br />
+      <Link href="shop_cartlook">
+        <a>カートを見る</a>
+      </Link>
       <h2>商品一覧</h2>
     </React.Fragment>
   );
@@ -99,7 +103,7 @@ const ShopList = (shopListParam: ShopListParam) => {
     items.push(
       <React.Fragment>
         {/* <br /> */}
-          {GenSelectProductFormChildren(shopListParam)}
+        {GenSelectProductFormChildren(shopListParam)}
         <br />
       </React.Fragment>
     );
@@ -136,10 +140,10 @@ export const getServerSideProps: GetServerSideProps = withSession(
       shopListParam.login = login;
       shopListParam.login_customer_code = req.session.get("member_code");
       shopListParam.login_customer_name = req.session.get("member_name");
-    // } else {
-    //   // 未ログインだったら
-    //   return { props: shopListParam };
-    // }
+      // } else {
+      //   // 未ログインだったら
+      //   return { props: shopListParam };
+      // }
     }
 
     //#region DBへproductを追加

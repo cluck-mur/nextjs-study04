@@ -181,11 +181,13 @@ export const getServerSideProps: GetServerSideProps = withSession(
       if (productcode != "") {
         shopCartinParam.product_code = productcode;
 
-        let cart: string[] = req.session.get("cart");
+        let cart: { product_code: string; kazu: number }[] = req.session.get(
+          "cart"
+        );
         if (cart == void 0) {
           cart = new Array();
         }
-        cart.push(productcode);
+        cart.push({ product_code: productcode, kazu: 1 });
 
         req.session.set("cart", cart);
         await req.session.save();
@@ -196,7 +198,6 @@ export const getServerSideProps: GetServerSideProps = withSession(
         //   console.log(productcode);
         // })
         // //#endregion debug
-
       } else {
         shopCartinParam.is_null_productcode = true;
       }

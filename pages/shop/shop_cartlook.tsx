@@ -35,6 +35,7 @@ type ShopCartlookParam = {
     product_name: string;
     product_price: number;
     product_image: string;
+    order_num: number;
   }[];
 };
 
@@ -91,94 +92,57 @@ const ShopCartlook = (shopCartlookParam: ShopCartlookParam) => {
 
   if (!shopCartlookParam.is_exception) {
     if (shopCartlookParam.cart != void 0) {
-      shopCartlookParam.cart.map((product_data) => {
-        items.push(
-          <React.Fragment>
-            {/* 商品コード
-        <br />
-        {productDispParam.product_code}
-        <br /> */}
-            {/* <form method="post" action={next_page}> */}
-            {/* <b>商品コード</b>
-          <br /> */}
-            {/* <input
-              type="text"
-              name="code"
-              width="200px"
-              readOnly
-              style={{ background: "#dddddd" }}
-              defaultValue={productDispParam.product_code}
-            /> */}
-            {product_data.product_code}:
-            {/* <br />
-          <b>商品名</b>
-          <br /> */}
-            {/* <input
-              type="text"
-              name="name"
-              width="200px"
-              readOnly
-              style={{ background: "#dddddd" }}
-              maxLength={productNameMaxLegth}
-              defaultValue={product_name}
-              //onChange={onChangeEvent}
-            /> */}
-            {product_data.product_name}
-            {/* <br />
-          <b>価格</b>
-          <br /> */}
-            {/* <input
-              type="text"
-              name="name"
-              width="200px"
-              readOnly
-              style={{ background: "#dddddd" }}
-              // maxLength={productNameMaxLegth}
-              defaultValue={product_price}
-              //onChange={onChangeEvent}
-            /> */}
-            {/* {product_price}
-          円 */}
-            {/* <br />
-          <b>画像</b>
-          <br /> */}
-            {/* <input
-              type="text"
-              name="name"
-              width="200px"
-              readOnly
-              style={{ background: "#dddddd" }}
-              // maxLength={productNameMaxLegth}
-              defaultValue={product_price}
-              //onChange={onChangeEvent}
-            /> */}
-            {product_data.product_image == void 0 ||
-            product_data.product_image == "" ? (
-              <img src="/now_printing.png" />
-            ) : (
-              <p style={{ width: "150px", height: "150px" }}>
-                {/* <img width="100%" src={"/upload/" + product_image} /> */}
-                <img
-                  width="100%"
-                  src={`${imageServer1stPath}${
-                    product_data.product_image
-                  }?path=${encodeURIComponent(
-                    "/upload/" + product_data.product_image
-                  )}`}
-                />
-              </p>
-            )}
-            {product_data.product_price}
-            円
-            <br />
-            <br />
-          </React.Fragment>
-        );
-      });
+      items.push(
+        <React.Fragment>
+          <form method="post" action="shop_kazuchange">
+            {(() => {
+              let sub_items = [];
+              shopCartlookParam.cart.map((product_data) => {
+                sub_items.push(
+                  <React.Fragment>
+                    {/* <b>商品コード</b> */}
+                    {product_data.product_code}:{/* <b>商品名</b> */}
+                    {product_data.product_name}
+                    {/* <b>画像</b> */}
+                    {product_data.product_image == void 0 ||
+                    product_data.product_image == "" ? (
+                      <img src="/now_printing.png" />
+                    ) : (
+                      // <div style={{ width: "150px", height: "150px" }}>
+                      <img
+                        width="100%"
+                        style={{ width: "150px", height: "150px" }}
+                        src={`${imageServer1stPath}${
+                          product_data.product_image
+                        }?path=${encodeURIComponent(
+                          "/upload/" + product_data.product_image
+                        )}`}
+                      />
+                      // </div>
+                    )}
+                    {/* <b>価格</b> */}
+                    {product_data.product_price}円 (数量
+                    <input
+                      type="text"
+                      name={product_data.product_code}
+                      defaultValue={product_data.order_num}
+                    ></input>)
+                    <br />
+                    <br />
+                  </React.Fragment>
+                );
+              });
+              return sub_items;
+            })()}
+            <input type="submit" value="数量変更"></input>
+          </form>
+        </React.Fragment>
+      );
     } else {
       items.push(
         <React.Fragment>
           カートに商品が入っていません。
+          <br />
           <br />
         </React.Fragment>
       );
@@ -254,10 +218,14 @@ export const getServerSideProps: GetServerSideProps = withSession(
       }
 
       //#region sessionからカートの中身を取得
-      let cart: string[] = req.session.get("cart");
+      let cart: { product_code: string; kazu: number }[] = req.session.get(
+        "cart"
+      );
       if (cart != void 0) {
         for (let i = 0; i < cart.length; i++) {
-          const productcode = cart[i];
+          const order = cart[i];
+          const productcode = order.product_code;
+          const order_num = order.kazu;
 
           let is_exception: boolean = false;
           try {
@@ -278,6 +246,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
                 product_name: raw_product[0].name,
                 product_price: raw_product[0].price,
                 product_image: raw_product[0].gazou,
+                order_num: order_num,
               });
             }
           } catch (e) {

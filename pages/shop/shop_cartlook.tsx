@@ -124,10 +124,15 @@ const ShopCartlook = (shopCartlookParam: ShopCartlookParam) => {
                     {product_data.product_price}円 (数量
                     <input
                       type="text"
-                      name={product_data.product_code}
+                      name={"change" + product_data.product_code}
                       defaultValue={product_data.order_num}
-                    ></input>)
-                    {product_data.product_price*product_data.order_num}円
+                    ></input>
+                    ){product_data.product_price * product_data.order_num}円
+                    <input
+                      type="checkbox"
+                      name={"delete" + product_data.product_code}
+                      defaultValue="false"
+                    ></input>
                     <br />
                     <br />
                   </React.Fragment>
@@ -159,7 +164,11 @@ const ShopCartlook = (shopCartlookParam: ShopCartlookParam) => {
           }
           value="カートに入れる"
         /> */}
-        <input type="button" onClick={() => router.push(previous_page)} value="戻る" />
+        <input
+          type="button"
+          onClick={() => router.push(previous_page)}
+          value="戻る"
+        />
         {/* <input type="submit" value="OK" />
           </form> */}
       </React.Fragment>

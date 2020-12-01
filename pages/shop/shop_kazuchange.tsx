@@ -130,7 +130,10 @@ export const getServerSideProps: GetServerSideProps = withSession(
       }
 
       //#region カートの数量を変更
-      let cart: { product_code: string; kazu: number }[] = req.session.get(
+      // let cart: { product_code: string; kazu: number }[] = req.session.get(
+      //   "cart"
+      // );
+      let cart = req.session.get(
         "cart"
       );
       if (cart != void 0) {

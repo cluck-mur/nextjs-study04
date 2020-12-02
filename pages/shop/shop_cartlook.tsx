@@ -131,7 +131,6 @@ const ShopCartlook = (shopCartlookParam: ShopCartlookParam) => {
                     <input
                       type="checkbox"
                       name={"delete" + product_data.product_code}
-                      defaultValue="false"
                     ></input>
                     <br />
                     <br />
@@ -167,7 +166,7 @@ const ShopCartlook = (shopCartlookParam: ShopCartlookParam) => {
         <input
           type="button"
           onClick={() => router.push(previous_page)}
-          value="戻る"
+          value="商品一覧へ戻る"
         />
         {/* <input type="submit" value="OK" />
           </form> */}

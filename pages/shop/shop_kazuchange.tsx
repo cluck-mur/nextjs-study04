@@ -27,6 +27,7 @@ type ShopKazuChengeParam = {
   // is_multipleexist_productcode: boolean;
   is_exception: boolean;
   is_worng_price: boolean;
+  is_worng_number: boolean;
   cart: {
     product_code: string;
     product_name: string;
@@ -58,15 +59,30 @@ const ShopKazuChange = (shopKazuChengeParam: ShopKazuChengeParam) => {
       <React.Fragment>
         エラー： 数字以外が入力されました。
         <br />
-        <br />
-        <input
-          type="button"
-          onClick={() => router.push(previous_page)}
-          value="戻る"
-        />
       </React.Fragment>
     );
   }
+
+  if (shopKazuChengeParam.is_worng_number) {
+    items.push(
+      <React.Fragment>
+        エラー： 数量は必ず1個以上、10個までです。
+        <br />
+      </React.Fragment>
+    );
+  }
+
+  items.push(
+    <React.Fragment>
+      <br />
+      <input
+        type="button"
+        onClick={() => router.push(previous_page)}
+        value="カートに戻る"
+      />
+    </React.Fragment>
+  );
+
   //   items.push(
   //     <React.Fragment>
   //       カートを空にしました。
@@ -101,6 +117,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
       // is_multipleexist_productcode: false,
       is_exception: false,
       is_worng_price: false,
+      is_worng_number: false,
       cart: null,
     };
 
@@ -133,35 +150,60 @@ export const getServerSideProps: GetServerSideProps = withSession(
       // let cart: { product_code: string; kazu: number }[] = req.session.get(
       //   "cart"
       // );
-      let cart = req.session.get(
-        "cart"
-      );
+      let cart: any[] = req.session.get("cart");
+      let delete_order: string[] = new Array();
       if (cart != void 0) {
         for (let i = 0; i < cart.length; i++) {
           const order = cart[i];
           const productcode = order.product_code;
           let order_num = order.kazu;
 
-          const new_order_num = fields_json[productcode];
+          const new_order_num = fields_json["change" + productcode];
+          const delete_order_flg = fields_json["delete" + productcode];
 
-          const match_result = new_order_num.match(/^[0-9]+$/);
-          order_num = parseInt(new_order_num);
+          if (delete_order_flg != "on") {
+            // 削除チェックされていない場合
+            const match_result = new_order_num.match(/^[0-9]+$/);
+            order_num = parseInt(new_order_num);
 
-          if (
-            match_result == null ||
-            isNaN(order_num) ||
-            order_num == void 0 ||
-            order_num <= 0
-          ) {
-            shopKazuChengeParam.is_worng_price = true;
-            break;
+            if (
+              match_result == null ||
+              isNaN(order_num) ||
+              order_num == void 0 ||
+              order_num <= 0
+            ) {
+              shopKazuChengeParam.is_worng_price = true;
+              break;
+            } else {
+              if (order_num < 0 || order_num > 10) {
+                shopKazuChengeParam.is_worng_number = true;
+                break;
+              } else {
+                order.kazu = order_num;
+              }
+            }
           } else {
-            order.kazu = order_num;
+            // 削除チェックされている場合
+            delete_order.push(productcode);
           }
         }
       }
 
-      if (shopKazuChengeParam.is_worng_price != true) {
+      // 削除チェックが入っている商品を削除
+      delete_order.map((product_code) => {
+        for (let i = 0; i < cart.length; i++) {
+          if (cart[i].product_code === product_code) {
+            // 要素を削除
+            cart.splice(i, 1);
+            break;
+          }
+        }
+      });
+
+      if (
+        !shopKazuChengeParam.is_worng_price &&
+        !shopKazuChengeParam.is_worng_number
+      ) {
         req.session.set("cart", cart);
         await req.session.save();
         //#endregion カートの数量を変更

@@ -27,6 +27,7 @@ type ShopCartinParam = {
   login_customer_code: string;
   login_customer_name: string;
   is_null_productcode: boolean;
+  is_existed_productcode: boolean;
   // is_noexist_productcode: boolean;
   // is_multipleexist_productcode: boolean;
   // is_exception: boolean;
@@ -95,7 +96,20 @@ const ShopCartin = (shopCartinParam: ShopCartinParam) => {
         <input
           type="button"
           onClick={() => router.push(redirect_page)}
-          value="戻る"
+          value="商品一覧へ戻る"
+        />
+      </React.Fragment>
+    );
+  } else if (shopCartinParam.is_existed_productcode) {
+    items.push(
+      <React.Fragment>
+        その商品は既にカートに入っています。
+        <br />
+        <br />
+        <input
+          type="button"
+          onClick={() => router.push(redirect_page)}
+          value="商品一覧へ戻る"
         />
       </React.Fragment>
     );
@@ -105,7 +119,11 @@ const ShopCartin = (shopCartinParam: ShopCartinParam) => {
         カートに追加しました。
         <br />
         <br />
-        <input type="button" onClick={() => router.back()} value="戻る" />
+        <input
+          type="button"
+          onClick={() => router.push(redirect_page)}
+          value="商品一覧へ戻る"
+        />
         {/* <input type="submit" value="OK" />
           </form> */}
       </React.Fragment>
@@ -138,6 +156,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
       // is_noexist_productcode: false,
       // is_multipleexist_productcode: false,
       // is_exception: false,
+      is_existed_productcode: false,
       product_code: null,
       // product_name: "",
       // product_price: null,
@@ -187,10 +206,22 @@ export const getServerSideProps: GetServerSideProps = withSession(
         if (cart == void 0) {
           cart = new Array();
         }
-        cart.push({ product_code: productcode, kazu: 1 });
 
-        req.session.set("cart", cart);
-        await req.session.save();
+        // 重複してカートに入らないようにする。
+        for (let i = 0; i < cart.length; i++) {
+          const product_data = cart[i];
+          if (product_data.product_code === productcode) {
+            shopCartinParam.is_existed_productcode = true;
+            break;
+          }
+        }
+
+        if (!shopCartinParam.is_existed_productcode) {
+          cart.push({ product_code: productcode, kazu: 1 });
+
+          req.session.set("cart", cart);
+          await req.session.save();
+        }
 
         // //#region debug
         // console.log("デバッグ情報(shop_cartin.tsx)");
